@@ -1,0 +1,45 @@
+[{
+        "name": "nodejs",
+        "icon": "icons/nodejs.svg"
+    },
+    {
+        "name": "expressjs",
+        "icon": "icons/expressjs-icon.svg"
+    },
+    {
+        "name": "mongodb",
+        "icon": "icons/mongodb.svg"
+    },
+    {
+        "name": "sequelize",
+        "icon": "icons/sequelize-icon.svg"
+    },
+    {
+        "name": "sveltekit",
+        "icon": "icons/svelte-icon.svg"
+    },
+    {
+        "name": "reactjs",
+        "icon": "icons/react-icon.svg"
+    },
+    {
+        "name": "tailwind",
+        "icon": "icons/tailwind-css-icon.svg"
+    },
+    {
+        "name": "webpack",
+        "icon": "icons/webpack.svg"
+    },
+    {
+        "name": "jest",
+        "icon": "icons/jest.svg"
+    },
+    {
+        "name": "laravel",
+        "icon": "icons/laravel-icon.svg"
+    },
+    {
+        "name": "symfony",
+        "icon": "icons/symfony-icon.svg"
+    }
+]

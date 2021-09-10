@@ -1,6 +1,8 @@
 <script>
   import "../styles/tailwind-output.css";
   import Nav from "$lib/Nav.svelte";
+  import Hero from "$lib/Hero.svelte";
+
 </script>
 
 <svelte:head>
@@ -17,7 +19,7 @@
 </svelte:head>
 
 <div>
-  <Nav />
+  <Hero />
   <div class="container mx-auto font-sans">
     <slot />
   </div>

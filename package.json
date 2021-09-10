@@ -36,6 +36,8 @@
     },
     "type": "module",
     "dependencies": {
-        "daisyui": "^1.14.0"
+        "aos": "^3.0.0-beta.6",
+        "daisyui": "^1.14.0",
+        "saos": "^1.2.0"
     }
 }
