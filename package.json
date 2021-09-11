@@ -41,7 +41,7 @@
         "aos": "^3.0.0-beta.6",
         "daisyui": "^1.14.0",
         "saos": "^1.2.0",
-        "svelte-carousel": "^1.0.14",
+        "svelte-carousel": "^1.0.15-rc1",
         "sveltejs": "file:adapter/netlify@next"
     }
 }

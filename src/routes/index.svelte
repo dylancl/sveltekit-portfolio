@@ -117,13 +117,12 @@
       this={Carousel}
       bind:this={carousel}
       autoplay
-      autoplayDuration={5000}
-      autoplayProgressVisible
       pauseOnFocus
+      autoplayProgressVisible
       arrows={false}
     >
       {#each foundProject.images as src}
-        <img {src} class="w-full carouselImg min-w-full" alt="nature" />
+        <img {src} class="carouselImg min-w-full" alt="nature" />
       {/each}
     </svelte:component>
   {/if}
@@ -190,8 +189,8 @@
     min-height: 100%;
   }
 
-  .carouselImg {
-    min-width: 100%;
+  /* .carouselImg {
+    min-width: 100% !important;
     min-height: 100% !important;
-  }
+  } */
 </style>
