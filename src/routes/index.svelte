@@ -16,19 +16,22 @@
   export let projects;
 
   let Carousel;
+  let carousel; // for calling methods of carousel instance
   onMount(async () => {
     const module = await import("svelte-carousel");
     Carousel = module.default;
   });
 
-  let clickedProject = "";
+  let clickedProject;
   let foundProject;
   let projectTags;
   let isOpen = false;
   const close = () => (isOpen = false);
-  const open = () => (isOpen = true);
-
-  $: isOpen && getProject(clickedProject);
+  const open = (e) => {
+    clickedProject = e.target.offsetParent.dataset.id;
+    getProject(clickedProject);
+    isOpen = true;
+  };
 
   const getProject = (clickedProj) => {
     const project = projects.find((project) => project.name == clickedProj);
@@ -41,6 +44,7 @@
         })
         .join("");
     foundProject = project;
+    console.log(foundProject && foundProject.images)
   };
 </script>
 
@@ -58,10 +62,10 @@
       >
         <button
           on:click={open}
-          on:click={() => (clickedProject = project.name)}
+          data-id={project.name}
           class="card text-left bordered bg-base-200 rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105"
         >
-          <div class="card-body">
+          <div class="card-body" data-id={project.name}>
             <div class="flex -mx-1 flex-wrap">
               {#each project.tags as tag}
                 <span
@@ -109,23 +113,20 @@
   header={foundProject && foundProject.title}
 >
   {#if foundProject}
-    <img class="max-w-screen-lg" src={foundProject.image} alt="" />
     <svelte:component
       this={Carousel}
+      bind:this={carousel}
       autoplay
       autoplayDuration={5000}
       autoplayProgressVisible
       pauseOnFocus
       arrows={false}
     >
-      {#each foundProject.images as src, imageIndex (src)}
-        <img {src} class="w-full min-w-full" alt="nature" />
+      {#each foundProject.images as src}
+        <img {src} class="w-full carouselImg min-w-full" alt="nature" />
       {/each}
     </svelte:component>
   {/if}
-  <div slot="footer">
-    <!-- <Button on:click={close}>Ok</Button> -->
-  </div>
 </Modal>
 
 <style>
@@ -187,5 +188,10 @@
   .card {
     height: 100%;
     min-height: 100%;
+  }
+
+  .carouselImg {
+    min-width: 100%;
+    min-height: 100% !important;
   }
 </style>

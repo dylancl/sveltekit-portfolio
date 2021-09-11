@@ -1328,6 +1328,15 @@ html {
 	color: hsla(var(--nc)/var(--tw-text-opacity,1));
 	z-index: 20;
 }
+.carousel {
+	display: flex;
+	overflow-x: scroll;
+	-ms-scroll-snap-type: x mandatory;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
 .footer {
 	display: grid;
 	place-items: start;
@@ -1428,6 +1437,9 @@ html {
 	font-size: 1.25rem;
 	line-height: 1.75rem;
 	margin-bottom: .75rem;
+}
+.carousel::-webkit-scrollbar {
+	display: none;
 }
 @-webkit-keyframes checkmark {
 
