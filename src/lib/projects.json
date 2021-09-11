@@ -1,0 +1,45 @@
+[{
+        "name": "shibe.host",
+        "title": "shibe.host - a private file uploading service",
+        "date": "2021-04-03T00:00:00.000Z",
+        "excerpt": "shibe.host is a private file uploading service, primarily focused on embeddable images to be used on Discord. The backend runs on Nodejs + Express, while the frontend was made using SvelteKit.",
+        "images": ["/images/shibe.host.png", "/images/shibe.host1.png", "/images/shibe.host2.png"],
+        "tags": [
+            "NodeJS",
+            "Express",
+            "SvelteKit",
+            "Mongoose",
+            "Tailwind"
+        ]
+    },
+    {
+        "name": "arlan",
+        "title": "Arlan - a cryptocurrency webshop",
+        "date": "2021-04-03T00:00:00.000Z",
+        "excerpt": "Arlan was a college assignment which tasked us with designing and developing a webshop that does something unique.",
+        "images": ["/images/arlan.png", "/images/arlan1.png"],
+        "tags": [
+            "NodeJS",
+            "Express",
+            "Passport",
+            "Sequelize",
+            "Jest"
+        ],
+        "finished": true
+    },
+    {
+        "name": "movc",
+        "title": "{MovC} - a movie/show database",
+        "date": "2021-04-03T00:00:00.000Z",
+        "excerpt": "MovieCollection is a React app utilizing TheMovieDatbase's API to show the last movies and shows.",
+        "images": ["/images/arlan.png"],
+        "tags": [
+            "React",
+            "Firebase",
+            "Jest",
+            "Storybook",
+            "Sass"
+        ],
+        "finished": true
+    }
+]

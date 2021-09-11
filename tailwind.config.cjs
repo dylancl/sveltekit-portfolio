@@ -8,6 +8,10 @@ module.exports = {
         extend: {
             fontFamily: {
                 sans: ["Inter", ...defaultTheme.fontFamily.sans],
+            },
+            fontSize: {
+                "10xl": "9rem",
+                "11xl": "11rem",
             }
         },
     },

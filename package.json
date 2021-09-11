@@ -1,9 +1,10 @@
 {
     "name": "svelte-kit-blog-demo",
     "version": "0.0.1",
+    "private": true,
     "scripts": {
         "dev:only": "svelte-kit dev",
-        "build:only": "svelte-kit build",
+        "build:only": "svelte-kit build --verbose",
         "preview": "svelte-kit preview",
         "tailwind:watch": "cross-env TAILWIND_MODE=watch cross-env NODE_ENV=development postcss src/styles/tailwind.css -o src/styles/tailwind-output.css -w",
         "tailwind:build": "cross-env TAILWIND_MODE=build cross-env NODE_ENV=production postcss src/styles/tailwind.css -o src/styles/tailwind-output.css",
@@ -11,8 +12,9 @@
         "build": "npm run tailwind:build && npm run build:only"
     },
     "devDependencies": {
+        "@sveltejs/adapter-netlify": "^1.0.0-next.30",
         "@sveltejs/adapter-node": "next",
-        "@sveltejs/adapter-static": "^1.0.0-next.0",
+        "@sveltejs/adapter-static": "^1.0.0-next.18",
         "@sveltejs/kit": "next",
         "autoprefixer": "^10.3.4",
         "concurrently": "^6.2.1",
@@ -38,6 +40,8 @@
     "dependencies": {
         "aos": "^3.0.0-beta.6",
         "daisyui": "^1.14.0",
-        "saos": "^1.2.0"
+        "saos": "^1.2.0",
+        "svelte-carousel": "^1.0.14",
+        "sveltejs": "file:adapter/netlify@next"
     }
 }
