@@ -9,13 +9,13 @@
       alt: "GitHub",
     },
     {
-      link: "https://www.linkedin.com/in/",
+      link: "https://www.linkedin.com/in/dylan-cathelijn-00551214b/",
       icon: "icons/linkedin.svg",
       name: "LinkedIn",
       alt: "LinkedIn",
     },
     {
-      link: "mailto:dylan",
+      link: "mailto:dylan_cathelyn@hotmail.be",
       icon: "icons/email.svg",
       name: "Email",
       alt: "Email",
@@ -27,7 +27,6 @@
   import HALO from "vanta/dist/vanta.halo.min.js";
   onMount(() => {
     if (innerWidth > 800) {
-      console.log(innerWidth);
       const vanta = HALO({
         el: document.querySelector(".vanta"),
         mouseControls: true,
@@ -73,7 +72,7 @@
             fill="#3f37c9ff"
           >
             <tspan x="0" y="40%">Dylan</tspan>
-            <tspan x="0" y="90%">Lastname</tspan>
+            <tspan x="0" y="90%">Cathelijn</tspan>
           </text>
         </svg>
         <p class="text-left text-lg text-white font-bold prose md:ml-4">
@@ -91,7 +90,7 @@
               >
                 <a href={contactInfo.link}>
                   <div
-                    class="card bg-base-200 p-0 rounded-none text-white shadow-2xl transform transition duration-500 hover:scale-105"
+                    class="card bg-base-200 p-0 rounded-none text-white shadow-2xl"
                   >
                     <div class="card-body p-3">
                       <p class="font-bold uppercase">
@@ -121,6 +120,16 @@
     --color-8: #4361eeff;
     --color-9: #4895efff;
     --color-10: #4cc9f0ff;
+  }
+
+  .card {
+    box-shadow: 0 0 var(--color-4);
+    transition: 0.5s ease;
+  }
+
+  .card:hover {
+    box-shadow: -6px 6px var(--color-7);
+    transform: translate(6px, -6px);
   }
 
   .hero {

@@ -62,7 +62,7 @@
         <button
           on:click={open}
           data-id={project.name}
-          class="card text-left bordered bg-base-200 rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105"
+          class="card text-left bordered bg-base-200 rounded-none text-white shadow-lg"
         >
           <div class="card-body" data-id={project.name}>
             <div class="flex -mx-1 flex-wrap">
@@ -109,7 +109,11 @@
   {isOpen}
   on:close={close}
   tags={projectTags}
-  projectLink={foundProject ? foundProject.gh_link ? foundProject.gh_link : foundProject.link : null}
+  projectLink={foundProject
+    ? foundProject.gh_link
+      ? foundProject.gh_link
+      : foundProject.link
+    : null}
   header={foundProject && foundProject.title}
 >
   {#if foundProject}
@@ -129,6 +133,16 @@
 </Modal>
 
 <style>
+  .card {
+    box-shadow: 0 0 var(--color-4);
+    transition: 0.5s ease;
+  }
+
+  .card:hover {
+    box-shadow: -6px 6px var(--color-7);
+    transform: translate(6px, -6px);
+  }
+
   /**
  * ----------------------------------------
  * animation fade-in-fwd
