@@ -42,6 +42,7 @@
         "daisyui": "^1.14.0",
         "saos": "^1.2.0",
         "svelte-carousel": "^1.0.15-rc1",
-        "sveltejs": "file:adapter/netlify@next"
+        "sveltejs": "file:adapter/netlify@next",
+        "vanta": "^0.5.21"
     }
 }
