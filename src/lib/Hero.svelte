@@ -34,6 +34,7 @@
             yOffsetMobile: -0.8,
             minWidth: 200.0,
             baseColor: 0x155aff,
+            amplitudeFactor: 1,
             backgroundColor: 0x0,
             xOffset: 0.6,
             yOffset: -0.31,
@@ -54,7 +55,7 @@
 </svelte:head>
 
 <div class="hero vanta min-h-screen bg-base-200">
-    <div class="test flex justify-center items-center">
+    <div class="backdrop-blur flex justify-center items-center">
         <div class="text-center hero-content w-full">
             <div class="w-full">
                 <svg class="h-50 md:h-72 lg:h-96 w-full drop-shadow-2xl">
@@ -69,7 +70,7 @@
                     </text>
                 </svg>
                 <p
-                    class="text-left text-lg uppercase text-white font-bold prose md:ml-4"
+                    class="text-left text-lg text-white font-bold prose md:ml-4"
                 >
                     full-stack developer based in Belgium
                 </p>
@@ -121,14 +122,10 @@
         background-color: black;
     }
 
-    .test {
+    .backdrop-blur {
         height: 100%;
         width: 100%;
-        backdrop-filter: blur(1rem);
-    }
-
-    .vanta {
-        z-index: -10;
+        backdrop-filter: blur(0.1rem);
     }
 
     .hero-content {
@@ -143,7 +140,7 @@
         letter-spacing: 0.1em;
         stroke-width: 4;
         filter: drop-shadow(0px 3px 3px rgba(0, 0, 0, 1));
-        animation: textAnimate 10s ease-in-out alternate;
+        animation: textAnimate 10s cubic-bezier(0.86,0,0.07,1) alternate;
     }
 
     @keyframes textAnimate {

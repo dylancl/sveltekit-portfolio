@@ -65,7 +65,7 @@
                                 {@html tags}
                             {/if}
                         </div>
-                        <img class="h-8" src="/icons/github.svg" alt="GitHub icon">
+                        <a target="_blank" href={projectLink}><img class="h-8" src={projectLink.includes('https://github.com') ? '/icons/github.svg' : '/icons/website.svg'} alt="GitHub icon"></a>
                     </div>
                     <div class="mb-3" class:header={header || !Boolean(headerRef)}>
                         {#if header}

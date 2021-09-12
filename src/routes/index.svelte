@@ -44,7 +44,6 @@
         })
         .join("");
     foundProject = project;
-    console.log(foundProject && foundProject.images)
   };
 </script>
 
@@ -110,6 +109,7 @@
   {isOpen}
   on:close={close}
   tags={projectTags}
+  projectLink={foundProject ? foundProject.gh_link ? foundProject.gh_link : foundProject.link : null}
   header={foundProject && foundProject.title}
 >
   {#if foundProject}

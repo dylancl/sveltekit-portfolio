@@ -4,6 +4,7 @@
         "date": "2021-04-03T00:00:00.000Z",
         "excerpt": "shibe.host is a private file uploading service, primarily focused on embeddable images to be used on Discord. The backend runs on Nodejs + Express, while the frontend was made using SvelteKit.",
         "images": ["/images/shibe.host.png", "/images/shibe.host1.png", "/images/shibe.host2.png"],
+        "link": "https://shibe.host",
         "tags": [
             "NodeJS",
             "Express",
@@ -18,6 +19,7 @@
         "date": "2021-04-03T00:00:00.000Z",
         "excerpt": "Arlan was a college assignment which tasked us with designing and developing a webshop that does something unique.",
         "images": ["/images/arlan.png", "/images/arlan1.png"],
+        "gh_link": "https://github.com/pgmgent-pgm-4/webshop-arlan",
         "tags": [
             "NodeJS",
             "Express",
@@ -32,7 +34,8 @@
         "title": "{MovC} - a movie/show database",
         "date": "2021-04-03T00:00:00.000Z",
         "excerpt": "MovieCollection is a React app utilizing TheMovieDatbase's API to show the last movies and shows.",
-        "images": ["/images/arlan.png"],
+        "gh_link": "https://github.com/pgmgent-pgm-4/movie-application-dylancl",
+        "images": ["/images/moviecollection.png", "/images/moviecollection1.png", "/images/moviecollection2.png"],
         "tags": [
             "React",
             "Firebase",
