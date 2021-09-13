@@ -1583,6 +1583,20 @@ html {
 .prose tbody tr {
 	border-bottom-color: hsl(var(--bc)/40%);
 }
+.avatar.online:before {
+	content: "";
+	--tw-bg-opacity: 1;
+	background-color: hsla(var(--su)/var(--tw-bg-opacity,1));
+	border-radius: 9999px;
+	display: block;
+	height: .5rem;
+	position: absolute;
+	width: .5rem;
+	z-index: 10;
+	top: 5%;
+	right: 5%;
+	box-shadow: 0 0 0 2px hsl(var(--b1));
+}
 .-mx-2 {
 	margin-left: -0.5rem;
 	margin-right: -0.5rem;
@@ -1615,6 +1629,18 @@ html {
 .ml-2 {
 	margin-left: 0.5rem;
 }
+.mr-3 {
+	margin-right: 0.75rem;
+}
+.mt-1 {
+	margin-top: 0.25rem;
+}
+.mt-3 {
+	margin-top: 0.75rem;
+}
+.ml-4 {
+	margin-left: 1rem;
+}
 .flex {
 	display: flex;
 }
@@ -1629,6 +1655,18 @@ html {
 }
 .h-16 {
 	height: 4rem;
+}
+.h-10 {
+	height: 2.5rem;
+}
+.h-4 {
+	height: 1rem;
+}
+.h-5 {
+	height: 1.25rem;
+}
+.h-auto {
+	height: auto;
 }
 .min-h-screen {
 	min-height: 100vh;
@@ -1660,6 +1698,9 @@ html {
 .place-items-stretch {
 	place-items: stretch;
 }
+.items-end {
+	align-items: flex-end;
+}
 .items-center {
 	align-items: center;
 }
@@ -1690,6 +1731,9 @@ html {
 }
 .p-3 {
 	padding: 0.75rem;
+}
+.p-5 {
+	padding: 1.25rem;
 }
 .px-8 {
 	padding-left: 2rem;
@@ -1744,6 +1788,9 @@ html {
 .uppercase {
 	text-transform: uppercase;
 }
+.leading-normal {
+	line-height: 1.5;
+}
 .text-white {
 	--tw-text-opacity: 1;
 	color: rgba(255, 255, 255, var(--tw-text-opacity));
@@ -1759,6 +1806,14 @@ html {
 .text-gray-500 {
 	--tw-text-opacity: 1;
 	color: rgba(107, 114, 128, var(--tw-text-opacity));
+}
+.text-gray-200 {
+	--tw-text-opacity: 1;
+	color: rgba(229, 231, 235, var(--tw-text-opacity));
+}
+.text-gray-400 {
+	--tw-text-opacity: 1;
+	color: rgba(156, 163, 175, var(--tw-text-opacity));
 }
 .shadow-2xl {
 	--tw-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -1809,6 +1864,27 @@ html {
 	--tw-scale-x: 1.05;
 	--tw-scale-y: 1.05;
 	transform: var(--tw-transform);
+}
+@media (min-width: 640px) {
+
+	.sm\:h-64 {
+		height: 16rem;
+	}
+
+	.sm\:text-7xl {
+		font-size: 4.5rem;
+		line-height: 1;
+	}
+
+	.sm\:text-9xl {
+		font-size: 8rem;
+		line-height: 1;
+	}
+
+	.sm\:text-8xl {
+		font-size: 6rem;
+		line-height: 1;
+	}
 }
 @media (min-width: 768px) {
 

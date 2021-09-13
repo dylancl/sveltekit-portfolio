@@ -64,9 +64,9 @@
   <div class="backdrop-blur flex justify-center items-center">
     <div class="text-center hero-content w-full">
       <div class="w-full">
-        <svg class="h-50 md:h-72 lg:h-96 w-full drop-shadow-2xl">
+        <svg class="h-50 sm:h-64 md:h-72 lg:h-96 w-full drop-shadow-2xl">
           <text
-            class="text-7xl md:text-9xl xl:text-11xl md:font-extrabold"
+            class="text-7xl sm:text-8xl md:text-9xl xl:text-11xl md:font-extrabold"
             x="0"
             y="0"
             fill="#3f37c9ff"
