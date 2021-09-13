@@ -14,6 +14,17 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap"
     rel="stylesheet"
   />
+
+  <meta property="og:title" content="Dylan Cathelijn" />
+  <meta
+    property="og:description"
+    content="fullstack developer based in Belgium"
+  />
+  <meta property="og:image" content="/embedimage.png" />
+  <meta
+    property="og:url"
+    content="https://loving-blackwell-b19372.netlify.app/"
+  />
 </svelte:head>
 
 <div>
