@@ -64,10 +64,10 @@
       <p
         class=" text-lg bg-base-200 p-5 rounded-none leading-normal text-white "
       >
-        Hi 👋, I'm Dylan Cathelijn. I’m a 21 yr old aspiring web developer
-        living in Belgium. Since the age of 10 I've been obsessed with anything
-        relating to computers, and eventually found my passion to be making
-        websites. I'm currently enrolled at Arteveldehogeschool in the
+        Hi 👋, I'm Dylan Cathelijn. I’m a 22 yr old aspiring fullstack web
+        developer living in Belgium. Since the age of 10 I've been obsessed with
+        anything relating to computers, and eventually found my passion to be
+        making websites. I'm currently enrolled at Arteveldehogeschool in the
         Programming course where I'm sharpening my skills and learning to work
         with modern webtechnologies. I'm fortunate enough to live in an age
         where I'm able to find a ton of information online and use that
