@@ -21,7 +21,7 @@
     property="og:description"
     content="fullstack developer based in Belgium"
   />
-  <meta property="og:image" content="/embedimage.png" />
+  <meta property="og:image" content="/embedImage.png" />
   <meta
     property="og:url"
     content="https://loving-blackwell-b19372.netlify.app/"
