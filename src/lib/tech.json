@@ -4,7 +4,7 @@
     },
     {
         "name": "expressjs",
-        "icon": "icons/expressjs-icon.svg"
+        "icon": "icons/express.svg"
     },
     {
         "name": "mongodb",
@@ -41,5 +41,33 @@
     {
         "name": "symfony",
         "icon": "icons/symfony-icon.svg"
+    },
+    {
+        "name": "github",
+        "icon": "icons/github.svg"
+    },
+    {
+        "name": "npm",
+        "icon": "icons/npm.svg"
+    },
+    {
+        "name": "netlify",
+        "icon": "icons/netlify.svg"
+    },
+    {
+        "name": "firebase",
+        "icon": "icons/firebase.svg"
+    },
+    {
+        "name": "socket.io",
+        "icon": "icons/socketdotio.svg"
+    },
+    {
+        "name": "sass",
+        "icon": "icons/sass.svg"
+    },
+    {
+        "name": "passportjs",
+        "icon": "icons/passport.svg"
     }
 ]
