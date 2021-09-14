@@ -1,6 +1,7 @@
 <script>
   import "../styles/tailwind-output.css";
-  import Nav from "$lib/Nav.svelte";
+  // import Nav from "$lib/Nav.svelte";
+  import Footer from "$lib/Footer.svelte";
 </script>
 
 <svelte:head>
@@ -31,4 +32,5 @@
   <div class="font-sans">
     <slot />
   </div>
+  <Footer />
 </div>
