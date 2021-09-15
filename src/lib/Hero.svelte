@@ -60,7 +60,7 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
 </svelte:head>
 
-<div class="hero vanta min-h-screen bg-base-200">
+<div id="hero" class="hero vanta min-h-screen bg-base-200">
   <div class="backdrop-blur flex justify-center items-center">
     <div class="text-center hero-content w-full">
       <div class="w-full">

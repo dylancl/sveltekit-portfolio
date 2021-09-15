@@ -53,7 +53,7 @@
 </svelte:head>
 
 <Hero />
-<div class="container mx-auto">
+<div id="about" class="container mx-auto">
   <div class="my-20">
     <h1 class="text-4xl my-8 font-bold text-white">About me</h1>
     <Saos
@@ -77,7 +77,7 @@
     </Saos>
   </div>
 
-  <div class="my-20">
+  <div id="proj" class="my-20">
     <a class="projectLink flex items-center" href="/projects">
       <h1 class="text-4xl my-8 font-bold text-white">Projects</h1>
       <img class="h-5 mt-3 ml-2" src="/icons/link.svg" alt="link icon" />
@@ -113,10 +113,8 @@
     </div>
   </div>
 
-  <div class="my-20">
-    <h1 class="text-4xl my-8 font-bold text-white">
-      Technologies I &#10084;&#65039;
-    </h1>
+  <div id="#tech" class="my-20">
+    <h1 class="text-4xl my-8 font-bold text-white">Technologies I've used</h1>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch">
       {#each technologies as tech}
         <Saos
