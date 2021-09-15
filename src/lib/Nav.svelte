@@ -1,6 +1,5 @@
 <script>
   import { page } from "$app/stores";
-  console.log($page);
 </script>
 
 <div>
@@ -11,20 +10,30 @@
     <div class="px-2 mx-2 navbar-center lg:flex">
       <div class="flex items-stretch">
         <a
-          class="btn btn-ghost btn-sm rounded-none"
+          class="btn btn-ghost btn-sm rounded-none hover:bg-base-200"
           href={$page.path === "/projects" ? "/" : "#hero"}
         >
           Home
         </a>
         <a
-          class="btn btn-ghost btn-sm rounded-none"
+          class="btn btn-ghost btn-sm rounded-none hover:bg-base-200"
           class:text-blue-400={$page.path === "/projects"}
           href={$page.path === "/projects" ? "#" : "#proj"}
         >
           Projects
         </a>
-        <a class="btn btn-ghost btn-sm rounded-none" href="/#about"> About </a>
-        <a class="btn btn-ghost btn-sm rounded-none" href="/#tech"> Tech </a>
+        <a
+          class="btn btn-ghost btn-sm rounded-none hover:bg-base-200"
+          href="/#about"
+        >
+          About
+        </a>
+        <a
+          class="btn btn-ghost btn-sm rounded-none hover:bg-base-200"
+          href="/#tech"
+        >
+          Tech
+        </a>
       </div>
     </div>
     <div class="navbar-end" />

@@ -35,7 +35,9 @@
         minHeight: 200.0,
         scaleMobile: 0.5,
         yOffsetMobile: -0.8,
+        ringFactor: 0.1,
         minWidth: 200.0,
+        speed: 0.1,
         baseColor: 0x155aff,
         amplitudeFactor: 0.3,
         backgroundColor: 0x0,
@@ -53,7 +55,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Heebo:wght@700;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700;900&display=swap"
     rel="stylesheet"
   />
   <script
@@ -64,12 +66,12 @@
   <div class="backdrop-blur flex justify-center items-center">
     <div class="text-center hero-content w-full">
       <div class="w-full">
-        <svg class="h-50 sm:h-64 md:h-72 lg:h-96 w-full drop-shadow-2xl">
+        <svg class="h-50 sm:h-64 md:h-72 lg:h-100 w-full drop-shadow-2xl">
           <text
             class="text-7xl sm:text-8xl md:text-9xl xl:text-11xl md:font-extrabold"
             x="0"
             y="0"
-            fill="#3f37c9ff"
+            fill="white"
           >
             <tspan x="0" y="40%">Dylan</tspan>
             <tspan x="0" y="90%">Cathelijn</tspan>
@@ -86,7 +88,7 @@
               <Saos
                 once={true}
                 animation={"fade-in-fwd 1s ease-in-out both"}
-                css_animation={"animation-delay: 9s;"}
+                css_animation={"animation-delay: 4.5s;"}
               >
                 <a href={contactInfo.link}>
                   <div
@@ -157,14 +159,15 @@
   }
 
   svg text {
-    font-family: "Inter";
+    font-family: "Ubuntu";
     letter-spacing: 10px;
-    fill: linear-gradient(to top, #30cfd0 0%, #330867 100%);
-    stroke: var(--color-7);
-    letter-spacing: 0.1em;
+    font-weight: 800;
+    fill: white;
+    stroke: white;
+    /* letter-spacing: 0.1em; */
     stroke-width: 4;
     filter: drop-shadow(0px 3px 3px rgba(0, 0, 0, 1));
-    animation: textAnimate 10s cubic-bezier(0.86, 0, 0.07, 1) alternate;
+    animation: textAnimate 5s linear;
   }
 
   @keyframes textAnimate {
@@ -201,7 +204,7 @@
     100% {
       stroke-dasharray: 50% 0;
       stroke-dashoffstet: -20%;
-      fill: var(--color-7);
+      fill: white;
     }
   }
 </style>
