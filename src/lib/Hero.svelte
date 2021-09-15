@@ -37,11 +37,11 @@
         yOffsetMobile: -0.8,
         minWidth: 200.0,
         baseColor: 0x155aff,
-        amplitudeFactor: 1,
+        amplitudeFactor: 0.3,
         backgroundColor: 0x0,
-        xOffset: 0.6,
-        yOffset: -0.31,
-        size: 3.0,
+        xOffset: 0,
+        yOffset: -4.2,
+        size: 20.0,
       });
     }
   });
@@ -149,7 +149,7 @@
   .backdrop-blur {
     height: 100%;
     width: 100%;
-    backdrop-filter: blur(0.1rem);
+    backdrop-filter: blur(5rem);
   }
 
   .hero-content {
