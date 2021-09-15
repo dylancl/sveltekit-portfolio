@@ -85,23 +85,17 @@
         >
           {#each contactInformation as contactInfo}
             <div>
-              <Saos
-                once={true}
-                animation={"fade-in-fwd 1s ease-in-out both"}
-                css_animation={"animation-delay: 4.5s;"}
-              >
-                <a href={contactInfo.link}>
-                  <div
-                    class="card bg-base-200 p-0 rounded-none text-white shadow-2xl"
-                  >
-                    <div class="card-body p-3">
-                      <p class="font-bold uppercase">
-                        {contactInfo.name}
-                      </p>
-                    </div>
+              <a href={contactInfo.link}>
+                <div
+                  class="card bg-base-200 p-0 rounded-none text-white shadow-2xl"
+                >
+                  <div class="card-body p-3">
+                    <p class="font-bold uppercase">
+                      {contactInfo.name}
+                    </p>
                   </div>
-                </a>
-              </Saos>
+                </div>
+              </a>
             </div>
           {/each}
         </div>
