@@ -1,7 +1,7 @@
 <script>
   import "../styles/tailwind-output.css";
   import Nav from "$lib/Nav.svelte";
-  import Footer from "$lib/Footer.svelte";
+  import Footer from "../Components/Footer.svelte";
 </script>
 
 <svelte:head>

@@ -10,10 +10,11 @@
 
 <script>
   import Saos from "saos/src/Saos.svelte";
-  import technologies from "$lib/tech.json";
   import Modal from "$lib/Modal.svelte";
   import { onMount } from "svelte";
-  import Hero from "$lib/Hero.svelte";
+  import Hero from "../Components/Hero.svelte";
+  import About from "../Components/About.svelte";
+  import Technologies from "../Components/Technologies.svelte";
   export let projects;
 
   let Carousel;
@@ -53,85 +54,45 @@
 </svelte:head>
 
 <Hero />
-<div id="about" class="container mx-auto">
-  <div class="my-20">
-    <h1 class="text-4xl my-8 font-bold text-white">About me</h1>
-    <Saos
-      once={true}
-      animation={"fade-in-bottom 1s ease-in-out both"}
-      css_animation={"height: 100%"}
-    >
-      <p
-        class=" text-lg bg-base-200 p-5 rounded-none leading-normal text-white "
-      >
-        Hi 👋, I'm Dylan Cathelijn. I’m a 22 yr old aspiring fullstack web
-        developer living in Belgium. Since the age of 10 I've been obsessed with
-        anything relating to computers, and eventually found my passion to be
-        making websites. I'm currently enrolled at Arteveldehogeschool in the
-        Programming course where I'm sharpening my skills and learning to work
-        with modern webtechnologies. I'm fortunate enough to live in an age
-        where I'm able to find a ton of information online and use that
-        information to teach myself new things. I'm passionate about learning
-        new technologies, and I'm always looking for new ways to improve myself.
-      </p>
-    </Saos>
-  </div>
+<About />
 
-  <div id="proj" class="my-20">
+<div id="proj" class="my-20 container mx-auto">
+  <Saos
+    animation={"fade-in-bottom 1s ease-in-out both"}
+    css_animation={"height: 100%"}
+  >
     <a class="projectLink flex items-center" href="/projects">
       <h1 class="text-4xl my-8 font-bold text-white">Projects</h1>
       <img class="h-5 mt-3 ml-2" src="/icons/link.svg" alt="link icon" />
     </a>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch">
       {#each projects as project}
-        <Saos
-          animation={"fade-in-bottom 1s ease-in-out both"}
-          css_animation={"height: 100%"}
+        <button
+          on:click={open}
+          data-id={project.name}
+          class="card text-left bordered bg-base-200 rounded-none text-white shadow-lg"
         >
-          <button
-            on:click={open}
-            data-id={project.name}
-            class="card text-left bordered bg-base-200 rounded-none text-white shadow-lg"
-          >
-            <div class="card-body" data-id={project.name}>
-              <div class="flex -mx-1 flex-wrap">
-                {#each project.tags as tag}
-                  <span
-                    class="tag text-xs uppercase font-semibold mb-1 px-1 text-blue-500"
-                    >{tag}
-                  </span>
-                {/each}
-              </div>
-              <h2 class="card-title text-2xl font-bold break-all">
-                {project.title}
-              </h2>
-              <p class="text-gray-500">{project.excerpt}</p>
+          <div class="card-body" data-id={project.name}>
+            <div class="flex -mx-1 flex-wrap">
+              {#each project.tags as tag}
+                <span
+                  class="tag text-xs uppercase font-semibold mb-1 px-1 text-blue-500"
+                  >{tag}
+                </span>
+              {/each}
             </div>
-          </button>
-        </Saos>
-      {/each}
-    </div>
-  </div>
-
-  <div id="#tech" class="my-20">
-    <h1 class="text-4xl my-8 font-bold text-white">Technologies I've used</h1>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch">
-      {#each technologies as tech}
-        <Saos
-          animation={"fade-in-bottom 1s ease-in-out both"}
-          css_animation={"height: 100%"}
-        >
-          <div
-            class="card bordered bg-base-200 px-4 flex flex-row justify-between items-center rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105"
-          >
-            <p class="text-lg font-bold uppercase">{tech.name}</p>
-            <img class="w-10 h-16" src={tech.icon} alt="" />
+            <h2 class="card-title text-2xl font-bold break-all">
+              {project.title}
+            </h2>
+            <p class="text-gray-500">{project.excerpt}</p>
           </div>
-        </Saos>
+        </button>
       {/each}
     </div>
-  </div>
+  </Saos>
 </div>
+
+<Technologies />
 
 <Modal
   {isOpen}

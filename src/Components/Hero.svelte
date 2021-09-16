@@ -64,7 +64,7 @@
 
 <div id="hero" class="hero vanta min-h-screen bg-base-200">
   <div class="backdrop-blur flex justify-center items-center">
-    <div class="text-center hero-content w-full">
+    <div class="text-center hero-content container w-full">
       <div class="w-full">
         <svg class="h-50 sm:h-64 md:h-72 lg:h-100 w-full drop-shadow-2xl">
           <text
