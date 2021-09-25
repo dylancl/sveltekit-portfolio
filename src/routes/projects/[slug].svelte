@@ -12,10 +12,10 @@
 </script>
 
 <script>
-  import ProjectHero from "$components/ProjectHero.svelte";
+  import ProjectHero from "$lib/components/ProjectHero.svelte";
   export let projects;
   import technologies from "$lib/tech.json";
-  import ProjectTechnologies from "$components/ProjectTechnologies.svelte";
+  import ProjectTechnologies from "$lib/components/ProjectTechnologies.svelte";
   export let projectName;
   let foundProject;
   let projectImages;
