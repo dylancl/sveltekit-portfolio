@@ -1314,28 +1314,6 @@ var require_vanta_halo_min = __commonJS({
   }
 });
 
-// node_modules/ts-results/index.js
-var require_ts_results = __commonJS({
-  "node_modules/ts-results/index.js"(exports, module2) {
-    init_shims();
-    (function(factory) {
-      if (typeof module2 === "object" && typeof module2.exports === "object") {
-        var v = factory(require, exports);
-        if (v !== void 0)
-          module2.exports = v;
-      } else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "tslib", "./result", "./option"], factory);
-      }
-    })(function(require2, exports2) {
-      "use strict";
-      Object.defineProperty(exports2, "__esModule", { value: true });
-      var tslib_1 = require2("tslib");
-      tslib_1.__exportStar(require2("./result"), exports2);
-      tslib_1.__exportStar(require2("./option"), exports2);
-    });
-  }
-});
-
 // .svelte-kit/netlify/entry.js
 __export(exports, {
   handler: () => handler
@@ -1345,7 +1323,6 @@ init_shims();
 // .svelte-kit/output/server/app.js
 init_shims();
 var import_vanta_halo_min = __toModule(require_vanta_halo_min());
-var import_ts_results = __toModule(require_ts_results());
 var __require2 = typeof require !== "undefined" ? require : (x) => {
   throw new Error('Dynamic require of "' + x + '" is not supported');
 };
@@ -1380,6 +1357,9 @@ function get_single_valued_header(headers, key) {
     return value[0];
   }
   return value;
+}
+function coalesce_to_error(err) {
+  return err instanceof Error || err && err.name && err.message ? err : new Error(JSON.stringify(err));
 }
 function lowercase_keys(obj) {
   const clone2 = {};
@@ -1657,14 +1637,14 @@ function stringifyString(str) {
   result += '"';
   return result;
 }
-function noop() {
+function noop$1() {
 }
 function safe_not_equal(a, b) {
   return a != a ? b == b : a !== b || (a && typeof a === "object" || typeof a === "function");
 }
 Promise.resolve();
 var subscriber_queue = [];
-function writable(value, start = noop) {
+function writable(value, start = noop$1) {
   let stop;
   const subscribers = new Set();
   function set(new_value) {
@@ -1688,11 +1668,11 @@ function writable(value, start = noop) {
   function update(fn) {
     set(fn(value));
   }
-  function subscribe(run2, invalidate = noop) {
+  function subscribe2(run2, invalidate = noop$1) {
     const subscriber = [run2, invalidate];
     subscribers.add(subscriber);
     if (subscribers.size === 1) {
-      stop = start(set) || noop;
+      stop = start(set) || noop$1;
     }
     run2(value);
     return () => {
@@ -1703,7 +1683,7 @@ function writable(value, start = noop) {
       }
     };
   }
-  return { set, update, subscribe };
+  return { set, update, subscribe: subscribe2 };
 }
 function hash(value) {
   let hash2 = 5381;
@@ -1725,7 +1705,7 @@ async function render_response({
   page_config,
   status,
   error: error2,
-  page
+  page: page2
 }) {
   const css2 = new Set(options2.entry.css);
   const js = new Set(options2.entry.js);
@@ -1758,7 +1738,7 @@ async function render_response({
         navigating: writable(null),
         session
       },
-      page,
+      page: page2,
       components: branch.map(({ node }) => node.module.default)
     };
     for (let i = 0; i < branch.length; i += 1) {
@@ -1800,7 +1780,7 @@ async function render_response({
 				session: ${try_serialize($session, (error3) => {
       throw new Error(`Failed to serialize session data: ${error3.message}`);
     })},
-				host: ${page && page.host ? s$1(page.host) : "location.host"},
+				host: ${page2 && page2.host ? s$1(page2.host) : "location.host"},
 				route: ${!!page_config.router},
 				spa: ${!page_config.ssr},
 				trailing_slash: ${s$1(options2.trailing_slash)},
@@ -1811,10 +1791,10 @@ async function render_response({
 						${(branch || []).map(({ node }) => `import(${s$1(node.entry)})`).join(",\n						")}
 					],
 					page: {
-						host: ${page && page.host ? s$1(page.host) : "location.host"}, // TODO this is redundant
-						path: ${s$1(page && page.path)},
-						query: new URLSearchParams(${page ? s$1(page.query.toString()) : ""}),
-						params: ${page && s$1(page.params)}
+						host: ${page2 && page2.host ? s$1(page2.host) : "location.host"}, // TODO this is redundant
+						path: ${s$1(page2 && page2.path)},
+						query: new URLSearchParams(${page2 ? s$1(page2.query.toString()) : ""}),
+						params: ${page2 && s$1(page2.params)}
 					}
 				}` : "null"}
 			});
@@ -1862,7 +1842,7 @@ function try_serialize(data, fail) {
     return devalue(data);
   } catch (err) {
     if (fail)
-      fail(err);
+      fail(coalesce_to_error(err));
     return null;
   }
 }
@@ -1916,6 +1896,9 @@ function normalize(loaded) {
       };
     }
   }
+  if (loaded.context) {
+    throw new Error('You are returning "context" from a load function. "context" was renamed to "stuff", please adjust your code accordingly.');
+  }
   return loaded;
 }
 var s = JSON.stringify;
@@ -1924,10 +1907,10 @@ async function load_node({
   options: options2,
   state,
   route,
-  page,
+  page: page2,
   node,
   $session,
-  context,
+  stuff,
   prerender_enabled,
   is_leaf,
   is_error,
@@ -1937,8 +1920,9 @@ async function load_node({
   const { module: module2 } = node;
   let uses_credentials = false;
   const fetched = [];
+  let set_cookie_headers = [];
   let loaded;
-  const page_proxy = new Proxy(page, {
+  const page_proxy = new Proxy(page2, {
     get: (target, prop, receiver) => {
       if (prop === "query" && prerender_enabled) {
         throw new Error("Cannot access query on a page with prerendering enabled");
@@ -1976,11 +1960,11 @@ async function load_node({
         let response;
         const filename = resolved.replace(options2.paths.assets, "").slice(1);
         const filename_html = `${filename}/index.html`;
-        const asset = options2.manifest.assets.find((d) => d.file === filename || d.file === filename_html);
+        const asset = options2.manifest.assets.find((d2) => d2.file === filename || d2.file === filename_html);
         if (asset) {
           response = options2.read ? new Response(options2.read(asset.file), {
             headers: asset.type ? { "content-type": asset.type } : {}
-          }) : await fetch(`http://${page.host}/${asset.file}`, opts);
+          }) : await fetch(`http://${page2.host}/${asset.file}`, opts);
         } else if (resolved.startsWith("/") && !resolved.startsWith("//")) {
           const relative = resolved;
           const headers = {
@@ -2042,8 +2026,11 @@ async function load_node({
                 const body = await response2.text();
                 const headers = {};
                 for (const [key2, value] of response2.headers) {
-                  if (key2 !== "etag" && key2 !== "set-cookie")
+                  if (key2 === "set-cookie") {
+                    set_cookie_headers = set_cookie_headers.concat(value);
+                  } else if (key2 !== "etag") {
                     headers[key2] = value;
+                  }
                 }
                 if (!opts.body || typeof opts.body === "string") {
                   fetched.push({
@@ -2071,7 +2058,7 @@ async function load_node({
           status: 404
         });
       },
-      context: { ...context }
+      stuff: { ...stuff }
     };
     if (is_error) {
       load_input.status = status;
@@ -2089,8 +2076,9 @@ async function load_node({
   return {
     node,
     loaded: normalize(loaded),
-    context: loaded.context || context,
+    stuff: loaded.stuff || stuff,
     fetched,
+    set_cookie_headers,
     uses_credentials
   };
 }
@@ -2153,13 +2141,10 @@ function resolve(base2, path) {
   const prefix = path_match && path_match[0] || base_match && base_match[0] || "";
   return `${prefix}${baseparts.join("/")}`;
 }
-function coalesce_to_error(err) {
-  return err instanceof Error ? err : new Error(JSON.stringify(err));
-}
 async function respond_with_error({ request, options: options2, state, $session, status, error: error2 }) {
   const default_layout = await options2.load_component(options2.manifest.layout);
   const default_error = await options2.load_component(options2.manifest.error);
-  const page = {
+  const page2 = {
     host: request.host,
     path: request.path,
     query: request.query,
@@ -2170,10 +2155,10 @@ async function respond_with_error({ request, options: options2, state, $session,
     options: options2,
     state,
     route: null,
-    page,
+    page: page2,
     node: default_layout,
     $session,
-    context: {},
+    stuff: {},
     prerender_enabled: is_prerender_enabled(options2, default_error, state),
     is_leaf: false,
     is_error: false
@@ -2185,10 +2170,10 @@ async function respond_with_error({ request, options: options2, state, $session,
       options: options2,
       state,
       route: null,
-      page,
+      page: page2,
       node: default_error,
       $session,
-      context: loaded ? loaded.context : {},
+      stuff: loaded ? loaded.stuff : {},
       prerender_enabled: is_prerender_enabled(options2, default_error, state),
       is_leaf: false,
       is_error: true,
@@ -2208,7 +2193,7 @@ async function respond_with_error({ request, options: options2, state, $session,
       status,
       error: error2,
       branch,
-      page
+      page: page2
     });
   } catch (err) {
     const error3 = coalesce_to_error(err);
@@ -2252,9 +2237,10 @@ async function respond$1(opts) {
   let branch = [];
   let status = 200;
   let error2;
+  let set_cookie_headers = [];
   ssr:
     if (page_config.ssr) {
-      let context = {};
+      let stuff = {};
       for (let i = 0; i < nodes.length; i += 1) {
         const node = nodes[i];
         let loaded;
@@ -2263,20 +2249,21 @@ async function respond$1(opts) {
             loaded = await load_node({
               ...opts,
               node,
-              context,
+              stuff,
               prerender_enabled: is_prerender_enabled(options2, node, state),
               is_leaf: i === nodes.length - 1,
               is_error: false
             });
             if (!loaded)
               return;
+            set_cookie_headers = set_cookie_headers.concat(loaded.set_cookie_headers);
             if (loaded.loaded.redirect) {
-              return {
+              return with_cookies({
                 status: loaded.loaded.status,
                 headers: {
                   location: encodeURI(loaded.loaded.redirect)
                 }
-              };
+              }, set_cookie_headers);
             }
             if (loaded.loaded.error) {
               ({ status, error: error2 } = loaded.loaded);
@@ -2303,7 +2290,7 @@ async function respond$1(opts) {
                   const error_loaded = await load_node({
                     ...opts,
                     node: error_node,
-                    context: node_loaded.context,
+                    stuff: node_loaded.stuff,
                     prerender_enabled: is_prerender_enabled(options2, error_node, state),
                     is_leaf: false,
                     is_error: true,
@@ -2323,40 +2310,40 @@ async function respond$1(opts) {
                 }
               }
             }
-            return await respond_with_error({
+            return with_cookies(await respond_with_error({
               request,
               options: options2,
               state,
               $session,
               status,
               error: error2
-            });
+            }), set_cookie_headers);
           }
         }
-        if (loaded && loaded.loaded.context) {
-          context = {
-            ...context,
-            ...loaded.loaded.context
+        if (loaded && loaded.loaded.stuff) {
+          stuff = {
+            ...stuff,
+            ...loaded.loaded.stuff
           };
         }
       }
     }
   try {
-    return await render_response({
+    return with_cookies(await render_response({
       ...opts,
       page_config,
       status,
       error: error2,
       branch: branch.filter(Boolean)
-    });
+    }), set_cookie_headers);
   } catch (err) {
     const error3 = coalesce_to_error(err);
     options2.handle_error(error3, request);
-    return await respond_with_error({
+    return with_cookies(await respond_with_error({
       ...opts,
       status: 500,
       error: error3
-    });
+    }), set_cookie_headers);
   }
 }
 function get_page_config(leaf, options2) {
@@ -2365,6 +2352,12 @@ function get_page_config(leaf, options2) {
     router: "router" in leaf ? !!leaf.router : options2.router,
     hydrate: "hydrate" in leaf ? !!leaf.hydrate : options2.hydrate
   };
+}
+function with_cookies(response, set_cookie_headers) {
+  if (set_cookie_headers.length) {
+    response.headers["set-cookie"] = set_cookie_headers;
+  }
+  return response;
 }
 async function render_page(request, route, match, options2, state) {
   if (state.initiator === route) {
@@ -2375,7 +2368,7 @@ async function render_page(request, route, match, options2, state) {
     };
   }
   const params = route.params(match);
-  const page = {
+  const page2 = {
     host: request.host,
     path: request.path,
     query: request.query,
@@ -2388,7 +2381,7 @@ async function render_page(request, route, match, options2, state) {
     state,
     $session,
     route,
-    page
+    page: page2
   });
   if (response) {
     return response;
@@ -2564,8 +2557,9 @@ async function respond(incoming, options2, state = {}) {
             branch: []
           });
         }
+        const decoded = decodeURI(request2.path);
         for (const route of options2.manifest.routes) {
-          const match = route.pattern.exec(request2.path);
+          const match = route.pattern.exec(decoded);
           if (!match)
             continue;
           const response = route.type === "endpoint" ? await render_endpoint(request2, route, match) : await render_page(request2, route, match, options2, state);
@@ -2608,6 +2602,8 @@ async function respond(incoming, options2, state = {}) {
     };
   }
 }
+function noop() {
+}
 function run(fn) {
   return fn();
 }
@@ -2617,8 +2613,12 @@ function blank_object() {
 function run_all(fns) {
   fns.forEach(run);
 }
-function null_to_empty(value) {
-  return value == null ? "" : value;
+function subscribe(store, ...callbacks) {
+  if (store == null) {
+    return noop;
+  }
+  const unsub = store.subscribe(...callbacks);
+  return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
 }
 function custom_event(type, detail, bubbles = false) {
   const e = document.createEvent("CustomEvent");
@@ -2648,6 +2648,9 @@ function createEventDispatcher() {
 }
 function setContext(key, context) {
   get_current_component().$$.context.set(key, context);
+}
+function getContext(key) {
+  return get_current_component().$$.context.get(key);
 }
 Promise.resolve();
 var escaped = {
@@ -2720,13 +2723,13 @@ function add_attribute(name, value, boolean) {
 }
 function afterUpdate() {
 }
-var css$3 = {
+var css$5 = {
   code: "#svelte-announcer.svelte-9z6sc{position:absolute;left:0;top:0;clip:rect(0 0 0 0);-webkit-clip-path:inset(50%);clip-path:inset(50%);overflow:hidden;white-space:nowrap;width:1px;height:1px}",
   map: `{"version":3,"file":"root.svelte","sources":["root.svelte"],"sourcesContent":["<!-- This file is generated by @sveltejs/kit \u2014 do not edit it! -->\\n<script>\\n\\timport { setContext, afterUpdate, onMount } from 'svelte';\\n\\n\\t// stores\\n\\texport let stores;\\n\\texport let page;\\n\\n\\texport let components;\\n\\texport let props_0 = null;\\n\\texport let props_1 = null;\\n\\texport let props_2 = null;\\n\\n\\tsetContext('__svelte__', stores);\\n\\n\\t$: stores.page.set(page);\\n\\tafterUpdate(stores.page.notify);\\n\\n\\tlet mounted = false;\\n\\tlet navigated = false;\\n\\tlet title = null;\\n\\n\\tonMount(() => {\\n\\t\\tconst unsubscribe = stores.page.subscribe(() => {\\n\\t\\t\\tif (mounted) {\\n\\t\\t\\t\\tnavigated = true;\\n\\t\\t\\t\\ttitle = document.title || 'untitled page';\\n\\t\\t\\t}\\n\\t\\t});\\n\\n\\t\\tmounted = true;\\n\\t\\treturn unsubscribe;\\n\\t});\\n<\/script>\\n\\n<svelte:component this={components[0]} {...(props_0 || {})}>\\n\\t{#if components[1]}\\n\\t\\t<svelte:component this={components[1]} {...(props_1 || {})}>\\n\\t\\t\\t{#if components[2]}\\n\\t\\t\\t\\t<svelte:component this={components[2]} {...(props_2 || {})}/>\\n\\t\\t\\t{/if}\\n\\t\\t</svelte:component>\\n\\t{/if}\\n</svelte:component>\\n\\n{#if mounted}\\n\\t<div id=\\"svelte-announcer\\" aria-live=\\"assertive\\" aria-atomic=\\"true\\">\\n\\t\\t{#if navigated}\\n\\t\\t\\t{title}\\n\\t\\t{/if}\\n\\t</div>\\n{/if}\\n\\n<style>\\n\\t#svelte-announcer {\\n\\t\\tposition: absolute;\\n\\t\\tleft: 0;\\n\\t\\ttop: 0;\\n\\t\\tclip: rect(0 0 0 0);\\n\\t\\t-webkit-clip-path: inset(50%);\\n\\t\\t        clip-path: inset(50%);\\n\\t\\toverflow: hidden;\\n\\t\\twhite-space: nowrap;\\n\\t\\twidth: 1px;\\n\\t\\theight: 1px;\\n\\t}</style>"],"names":[],"mappings":"AAsDC,iBAAiB,aAAC,CAAC,AAClB,QAAQ,CAAE,QAAQ,CAClB,IAAI,CAAE,CAAC,CACP,GAAG,CAAE,CAAC,CACN,IAAI,CAAE,KAAK,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CACnB,iBAAiB,CAAE,MAAM,GAAG,CAAC,CACrB,SAAS,CAAE,MAAM,GAAG,CAAC,CAC7B,QAAQ,CAAE,MAAM,CAChB,WAAW,CAAE,MAAM,CACnB,KAAK,CAAE,GAAG,CACV,MAAM,CAAE,GAAG,AACZ,CAAC"}`
 };
 var Root = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let { stores } = $$props;
-  let { page } = $$props;
+  let { page: page2 } = $$props;
   let { components } = $$props;
   let { props_0 = null } = $$props;
   let { props_1 = null } = $$props;
@@ -2735,8 +2738,8 @@ var Root = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   afterUpdate(stores.page.notify);
   if ($$props.stores === void 0 && $$bindings.stores && stores !== void 0)
     $$bindings.stores(stores);
-  if ($$props.page === void 0 && $$bindings.page && page !== void 0)
-    $$bindings.page(page);
+  if ($$props.page === void 0 && $$bindings.page && page2 !== void 0)
+    $$bindings.page(page2);
   if ($$props.components === void 0 && $$bindings.components && components !== void 0)
     $$bindings.components(components);
   if ($$props.props_0 === void 0 && $$bindings.props_0 && props_0 !== void 0)
@@ -2745,9 +2748,9 @@ var Root = create_ssr_component(($$result, $$props, $$bindings, slots) => {
     $$bindings.props_1(props_1);
   if ($$props.props_2 === void 0 && $$bindings.props_2 && props_2 !== void 0)
     $$bindings.props_2(props_2);
-  $$result.css.add(css$3);
+  $$result.css.add(css$5);
   {
-    stores.page.set(page);
+    stores.page.set(page2);
   }
   return `
 
@@ -2783,9 +2786,9 @@ function init(settings = default_settings) {
     amp: false,
     dev: false,
     entry: {
-      file: assets + "/_app/start-c6d6caec.js",
+      file: assets + "/_app/start-1d295508.js",
       css: [assets + "/_app/assets/start-c446e5f0.css"],
-      js: [assets + "/_app/start-c6d6caec.js", assets + "/_app/chunks/vendor-1587177f.js", assets + "/_app/chunks/preload-helper-ec9aa979.js"]
+      js: [assets + "/_app/start-1d295508.js", assets + "/_app/chunks/vendor-61e51747.js", assets + "/_app/chunks/preload-helper-ec9aa979.js"]
     },
     fetched: void 0,
     floc: false,
@@ -2812,9 +2815,10 @@ function init(settings = default_settings) {
     trailing_slash: "never"
   };
 }
+var d = (s2) => s2.replace(/%23/g, "#").replace(/%3[Bb]/g, ";").replace(/%2[Cc]/g, ",").replace(/%2[Ff]/g, "/").replace(/%3[Ff]/g, "?").replace(/%3[Aa]/g, ":").replace(/%40/g, "@").replace(/%26/g, "&").replace(/%3[Dd]/g, "=").replace(/%2[Bb]/g, "+").replace(/%24/g, "$");
 var empty = () => ({});
 var manifest = {
-  assets: [{ "file": "blurry-gradient-haikei.png", "size": 41969, "type": "image/png" }, { "file": "chrome_m031mgF0sC.png", "size": 163864, "type": "image/png" }, { "file": "embedImage.png", "size": 173669, "type": "image/png" }, { "file": "favicon-32x32.png", "size": 2893, "type": "image/png" }, { "file": "icons/email.svg", "size": 260, "type": "image/svg+xml" }, { "file": "icons/express.svg", "size": 787, "type": "image/svg+xml" }, { "file": "icons/firebase.svg", "size": 333, "type": "image/svg+xml" }, { "file": "icons/github.svg", "size": 839, "type": "image/svg+xml" }, { "file": "icons/jest.svg", "size": 3242, "type": "image/svg+xml" }, { "file": "icons/laravel-icon.svg", "size": 969, "type": "image/svg+xml" }, { "file": "icons/link.svg", "size": 456, "type": "image/svg+xml" }, { "file": "icons/linkedin.svg", "size": 627, "type": "image/svg+xml" }, { "file": "icons/mongodb.svg", "size": 1506, "type": "image/svg+xml" }, { "file": "icons/netlify.svg", "size": 4445, "type": "image/svg+xml" }, { "file": "icons/nodejs.svg", "size": 1647, "type": "image/svg+xml" }, { "file": "icons/npm.svg", "size": 331, "type": "image/svg+xml" }, { "file": "icons/passport.svg", "size": 357, "type": "image/svg+xml" }, { "file": "icons/react-icon.svg", "size": 1443, "type": "image/svg+xml" }, { "file": "icons/sass.svg", "size": 1236, "type": "image/svg+xml" }, { "file": "icons/sequelize-icon.svg", "size": 2806, "type": "image/svg+xml" }, { "file": "icons/socketdotio.svg", "size": 878, "type": "image/svg+xml" }, { "file": "icons/svelte-icon.svg", "size": 1990, "type": "image/svg+xml" }, { "file": "icons/symfony-icon.svg", "size": 1897, "type": "image/svg+xml" }, { "file": "icons/tailwind-css-icon.svg", "size": 858, "type": "image/svg+xml" }, { "file": "icons/webpack.svg", "size": 833, "type": "image/svg+xml" }, { "file": "icons/website.svg", "size": 848, "type": "image/svg+xml" }, { "file": "images/arlan.png", "size": 196842, "type": "image/png" }, { "file": "images/arlan1.png", "size": 171999, "type": "image/png" }, { "file": "images/moviecollection.png", "size": 1509709, "type": "image/png" }, { "file": "images/moviecollection1.png", "size": 1347248, "type": "image/png" }, { "file": "images/moviecollection2.png", "size": 1698294, "type": "image/png" }, { "file": "images/shibe.host.png", "size": 385462, "type": "image/png" }, { "file": "images/shibe.host1.png", "size": 148620, "type": "image/png" }, { "file": "images/shibe.host2.png", "size": 106085, "type": "image/png" }, { "file": "images/web1.png", "size": 33998, "type": "image/png" }, { "file": "robots.txt", "size": 70, "type": "text/plain" }],
+  assets: [{ "file": "blurry-gradient-haikei.png", "size": 41969, "type": "image/png" }, { "file": "chrome_m031mgF0sC.png", "size": 163864, "type": "image/png" }, { "file": "embedImage.png", "size": 173669, "type": "image/png" }, { "file": "favicon-32x32.png", "size": 2893, "type": "image/png" }, { "file": "icons/email.svg", "size": 260, "type": "image/svg+xml" }, { "file": "icons/express.svg", "size": 787, "type": "image/svg+xml" }, { "file": "icons/firebase.svg", "size": 333, "type": "image/svg+xml" }, { "file": "icons/github.svg", "size": 835, "type": "image/svg+xml" }, { "file": "icons/jest.svg", "size": 3242, "type": "image/svg+xml" }, { "file": "icons/laravel-icon.svg", "size": 969, "type": "image/svg+xml" }, { "file": "icons/link.svg", "size": 456, "type": "image/svg+xml" }, { "file": "icons/linkedin.svg", "size": 627, "type": "image/svg+xml" }, { "file": "icons/mongodb.svg", "size": 1506, "type": "image/svg+xml" }, { "file": "icons/netlify.svg", "size": 4445, "type": "image/svg+xml" }, { "file": "icons/nodejs.svg", "size": 1647, "type": "image/svg+xml" }, { "file": "icons/npm.svg", "size": 331, "type": "image/svg+xml" }, { "file": "icons/passport.svg", "size": 357, "type": "image/svg+xml" }, { "file": "icons/react-icon.svg", "size": 1443, "type": "image/svg+xml" }, { "file": "icons/sass.svg", "size": 1236, "type": "image/svg+xml" }, { "file": "icons/sequelize-icon.svg", "size": 2806, "type": "image/svg+xml" }, { "file": "icons/socketdotio.svg", "size": 878, "type": "image/svg+xml" }, { "file": "icons/svelte-icon.svg", "size": 1990, "type": "image/svg+xml" }, { "file": "icons/symfony-icon.svg", "size": 1897, "type": "image/svg+xml" }, { "file": "icons/tailwind-css-icon.svg", "size": 858, "type": "image/svg+xml" }, { "file": "icons/webpack.svg", "size": 833, "type": "image/svg+xml" }, { "file": "icons/website.svg", "size": 848, "type": "image/svg+xml" }, { "file": "images/arlan.png", "size": 196842, "type": "image/png" }, { "file": "images/arlan1.png", "size": 171999, "type": "image/png" }, { "file": "images/moviecollection.png", "size": 1509709, "type": "image/png" }, { "file": "images/moviecollection1.png", "size": 1347248, "type": "image/png" }, { "file": "images/moviecollection2.png", "size": 1698294, "type": "image/png" }, { "file": "images/shibe.host.png", "size": 385462, "type": "image/png" }, { "file": "images/shibe.host1.png", "size": 148620, "type": "image/png" }, { "file": "images/shibe.host2.png", "size": 106085, "type": "image/png" }, { "file": "images/web1.png", "size": 33998, "type": "image/png" }, { "file": "robots.txt", "size": 70, "type": "text/plain" }],
   layout: "src/routes/__layout.svelte",
   error: ".svelte-kit/build/components/error.svelte",
   routes: [
@@ -2832,6 +2836,13 @@ var manifest = {
       load: () => Promise.resolve().then(function() {
         return projects_json;
       })
+    },
+    {
+      type: "page",
+      pattern: /^\/projects\/([^/]+?)\/?$/,
+      params: (m) => ({ slug: d(m[1]) }),
+      a: ["src/routes/__layout.svelte", "src/routes/projects/[slug].svelte"],
+      b: [".svelte-kit/build/components/error.svelte"]
     },
     {
       type: "page",
@@ -2865,6 +2876,9 @@ var module_lookup = {
   "src/routes/index.svelte": () => Promise.resolve().then(function() {
     return index;
   }),
+  "src/routes/projects/[slug].svelte": () => Promise.resolve().then(function() {
+    return _slug_;
+  }),
   "src/routes/projects.svelte": () => Promise.resolve().then(function() {
     return projects;
   }),
@@ -2872,7 +2886,7 @@ var module_lookup = {
     return about;
   })
 };
-var metadata_lookup = { "src/routes/__layout.svelte": { "entry": "pages/__layout.svelte-de240bdb.js", "css": ["assets/pages/__layout.svelte-65961d33.css"], "js": ["pages/__layout.svelte-de240bdb.js", "chunks/vendor-1587177f.js"], "styles": [] }, ".svelte-kit/build/components/error.svelte": { "entry": "error.svelte-69240488.js", "css": [], "js": ["error.svelte-69240488.js", "chunks/vendor-1587177f.js"], "styles": [] }, "src/routes/index.svelte": { "entry": "pages/index.svelte-c8635b95.js", "css": ["assets/pages/index.svelte-1c99386a.css"], "js": ["pages/index.svelte-c8635b95.js", "chunks/preload-helper-ec9aa979.js", "chunks/vendor-1587177f.js"], "styles": [] }, "src/routes/projects.svelte": { "entry": "pages/projects.svelte-6b9d3d10.js", "css": [], "js": ["pages/projects.svelte-6b9d3d10.js", "chunks/vendor-1587177f.js"], "styles": [] }, "src/routes/about.svelte": { "entry": "pages/about.svelte-a28904a2.js", "css": [], "js": ["pages/about.svelte-a28904a2.js", "chunks/vendor-1587177f.js"], "styles": [] } };
+var metadata_lookup = { "src/routes/__layout.svelte": { "entry": "pages/__layout.svelte-2615c125.js", "css": ["assets/pages/__layout.svelte-cb11cb43.css"], "js": ["pages/__layout.svelte-2615c125.js", "chunks/vendor-61e51747.js"], "styles": [] }, ".svelte-kit/build/components/error.svelte": { "entry": "error.svelte-000ac87c.js", "css": [], "js": ["error.svelte-000ac87c.js", "chunks/vendor-61e51747.js"], "styles": [] }, "src/routes/index.svelte": { "entry": "pages/index.svelte-4a8da38f.js", "css": ["assets/pages/index.svelte-741e36ca.css"], "js": ["pages/index.svelte-4a8da38f.js", "chunks/vendor-61e51747.js", "chunks/tech-fa8acfb3.js"], "styles": [] }, "src/routes/projects/[slug].svelte": { "entry": "pages/projects/[slug].svelte-8e782723.js", "css": ["assets/pages/projects/[slug].svelte-1a3a3940.css"], "js": ["pages/projects/[slug].svelte-8e782723.js", "chunks/vendor-61e51747.js", "chunks/preload-helper-ec9aa979.js", "chunks/tech-fa8acfb3.js"], "styles": [] }, "src/routes/projects.svelte": { "entry": "pages/projects.svelte-d1732b06.js", "css": ["assets/pages/projects.svelte-f2124be7.css"], "js": ["pages/projects.svelte-d1732b06.js", "chunks/vendor-61e51747.js"], "styles": [] }, "src/routes/about.svelte": { "entry": "pages/about.svelte-2ee7bd90.js", "css": [], "js": ["pages/about.svelte-2ee7bd90.js", "chunks/vendor-61e51747.js"], "styles": [] } };
 async function load_component(file) {
   const { entry, css: css2, js, styles } = metadata_lookup[file];
   return {
@@ -2903,11 +2917,12 @@ var projects$1 = [
     link: "https://shibe.host",
     tags: [
       "NodeJS",
-      "Express",
+      "ExpressJS",
       "SvelteKit",
-      "Mongoose",
+      "MongoDB",
       "Tailwind"
-    ]
+    ],
+    long_text: "shibe.host is a file uploading service I made using a highly customized version of <a href='https://github.com/tycrek/ass'>ASS (A Selfhosted ShareX Server) to handle file uploads, and a frontend written with SvelteKit. The site is private by design, with an invite key system that people can use to invite their friends. I learned a lot about properly handing REST routes as well as learning how to work with SvelteKit to create a SSR app.</a>"
   },
   {
     name: "arlan",
@@ -2921,12 +2936,13 @@ var projects$1 = [
     gh_link: "https://github.com/pgmgent-pgm-4/webshop-arlan",
     tags: [
       "NodeJS",
-      "Express",
-      "Passport",
+      "ExpressJS",
+      "PassportJS",
       "Sequelize",
       "Jest"
     ],
-    finished: true
+    finished: true,
+    long_text: "Arlan is a cryptocurrency webshop I made for Arteveldehogeschool in collaberation with Arthur Temmerman. The goal of the site was to rethink how webshops are made, specifically in this case cryptocurrency platforms. We wanted to design a system that made it easier for new people to invest, or buy cryptocurrency by not working like a crypto exchange, but rather a crypto webshop. This is accomplished by only allowing the user to buy with set amounts of their currency in exchange for the set amount of crypto."
   },
   {
     name: "movc",
@@ -2940,13 +2956,14 @@ var projects$1 = [
       "/images/moviecollection2.png"
     ],
     tags: [
-      "React",
-      "Firebase",
+      "ReactJS",
+      "firebase",
       "Jest",
       "Storybook",
       "Sass"
     ],
-    finished: true
+    finished: true,
+    long_text: "{MovC} (read: MovieCollection) is a project for Arteveldehogeschool where the task was to create a visually appealing movie database, along the likes of IMDB and Rotten Tomatoes. I decided to go for a dashboard-like appearance emulating a site like Netflix allowing for an easy & intiutive way of browsing the database. The site was deployed to Firebase using GitHub actions, and uses Firestore for user authentication."
   }
 ];
 async function get({ query, locals }) {
@@ -2960,13 +2977,59 @@ var projects_json = /* @__PURE__ */ Object.freeze({
   [Symbol.toStringTag]: "Module",
   get
 });
+var getStores = () => {
+  const stores = getContext("__svelte__");
+  return {
+    page: {
+      subscribe: stores.page.subscribe
+    },
+    navigating: {
+      subscribe: stores.navigating.subscribe
+    },
+    get preloading() {
+      console.error("stores.preloading is deprecated; use stores.navigating instead");
+      return {
+        subscribe: stores.navigating.subscribe
+      };
+    },
+    session: stores.session
+  };
+};
+var page = {
+  subscribe(fn) {
+    const store = getStores().page;
+    return store.subscribe(fn);
+  }
+};
+var Nav = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let $page, $$unsubscribe_page;
+  $$unsubscribe_page = subscribe(page, (value) => $page = value);
+  console.log($page.path);
+  $$unsubscribe_page();
+  return `<div><nav class="${"navbar bg-transparent fixed top-0 z-50 bg-base-100 text-white w-full"}"><div class="${"navbar-start"}"></div>
+    <div class="${"px-2 mx-2 navbar-center lg:flex"}"><div class="${"flex items-stretch"}"><a class="${"btn btn-ghost btn-sm rounded-none hover:bg-base-200"}"${add_attribute("href", $page.path === "/projects" ? "/" : "#hero", 0)}>Home
+        </a>
+        <a class="${[
+    "btn btn-ghost btn-sm rounded-none hover:bg-base-200",
+    $page.path === "/projects" ? "text-blue-400" : ""
+  ].join(" ").trim()}"${add_attribute("href", $page.path === "/projects" ? "#" : "#proj", 0)}>Projects
+        </a>
+        <a class="${"btn btn-ghost btn-sm rounded-none hover:bg-base-200"}" href="${"/#about"}">About
+        </a>
+        <a class="${"btn btn-ghost btn-sm rounded-none hover:bg-base-200"}" href="${"/#tech"}">Tech
+        </a></div></div>
+    <div class="${"navbar-end"}"></div></nav></div>`;
+});
 var Footer = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-  return `<footer class="${"p-2 footer rounded-none bg-base-200 text-white font-bold"}"><div class="${"container mx-auto flex justify-center flex-wrap items-center"}"><p class="${"flex"}">Made with <span class="${"text-red-500"}">\u2764 </span> using SvelteKit
+  return `<footer class="${"p-2 footer rounded-none bg-base-200 text-white font-bold"}"><div class="${"container mx-auto flex justify-center flex-wrap items-center"}"><p class="${"flex items-center"}">Made with <span class="${"text-red-500 mx-1"}">\u2764 </span> using
+      <span class="${"ml-2 mr-1"}"><img src="${"/icons/svelte-icon.svg"}" class="${"h-4"}" alt="${"Svelte icon"}"></span>
+      SvelteKit
     </p></div></footer>`;
 });
 var _layout = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   return `${$$result.head += `<link rel="${"stylesheet"}" href="${"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/github.min.css"}" data-svelte="svelte-1487djy"><link rel="${"preconnect"}" href="${"https://fonts.googleapis.com"}" data-svelte="svelte-1487djy"><link rel="${"preconnect"}" href="${"https://fonts.gstatic.com"}" crossorigin data-svelte="svelte-1487djy"><link href="${"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap"}" rel="${"stylesheet"}" data-svelte="svelte-1487djy"><meta property="${"og:title"}" content="${"Dylan Cathelijn"}" data-svelte="svelte-1487djy"><meta property="${"og:description"}" content="${"fullstack developer based in Belgium"}" data-svelte="svelte-1487djy"><meta property="${"og:image"}" content="${"/embedImage.png"}" data-svelte="svelte-1487djy"><meta property="${"og:url"}" content="${"https://loving-blackwell-b19372.netlify.app/"}" data-svelte="svelte-1487djy">`, ""}
 
+${validate_component(Nav, "Nav").$$render($$result, {}, {}, {})}
 <div><div class="${"font-sans"}">${slots.default ? slots.default({}) : ``}</div>
   ${validate_component(Footer, "Footer").$$render($$result, {}, {}, {})}</div>`;
 });
@@ -2975,7 +3038,7 @@ var __layout = /* @__PURE__ */ Object.freeze({
   [Symbol.toStringTag]: "Module",
   "default": _layout
 });
-function load$2({ error: error2, status }) {
+function load$3({ error: error2, status }) {
   return { props: { error: error2, status } };
 }
 var Error$1 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
@@ -2998,7 +3061,7 @@ var error = /* @__PURE__ */ Object.freeze({
   __proto__: null,
   [Symbol.toStringTag]: "Module",
   "default": Error$1,
-  load: load$2
+  load: load$3
 });
 var Saos = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let { animation = "none" } = $$props;
@@ -3029,6 +3092,65 @@ var Saos = create_ssr_component(($$result, $$props, $$bindings, slots) => {
     dispatch("update", { observing });
   }
   return `<div${add_attribute("id", countainer, 0)}${add_attribute("style", css_observer, 0)}>${`<div style="${"animation: " + escape(animation) + "; " + escape(css_animation)}">${slots.default ? slots.default({}) : ``}</div>`}</div>`;
+});
+var css$4 = {
+  code: `:root{--color-1:#f72585ff;--color-2:#b5179eff;--color-3:#7209b7ff;--color-4:#560badff;--color-5:#480ca8ff;--color-6:#3a0ca3ff;--color-7:#3f37c9ff;--color-8:#4361eeff;--color-9:#4895efff;--color-10:#4cc9f0ff}.card.svelte-1gyn11y.svelte-1gyn11y{box-shadow:0 0 var(--color-4);transition:0.5s ease}.card.svelte-1gyn11y.svelte-1gyn11y:hover{box-shadow:-6px 6px var(--color-7);transform:translate(6px, -6px)}.hero.svelte-1gyn11y.svelte-1gyn11y{background-color:black}@media screen and (max-width: 768px){.hero.svelte-1gyn11y.svelte-1gyn11y{background-color:#000000;background-color:#000000;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1500'%3E%3Cdefs%3E%3CradialGradient id='a' gradientUnits='objectBoundingBox'%3E%3Cstop offset='0' stop-color='%23151515'/%3E%3Cstop offset='1' stop-color='%23000000'/%3E%3C/radialGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='0' y1='750' x2='1550' y2='750'%3E%3Cstop offset='0' stop-color='%230b0b0b'/%3E%3Cstop offset='1' stop-color='%23000000'/%3E%3C/linearGradient%3E%3Cpath id='s' fill='url(%23b)' d='M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6c-24.1 96-57.4 189.4-99.3 278.6c-41.9 89.2-92.4 174.1-150.3 253.3c-58 79.2-123.4 152.6-195.1 219c-71.7 66.4-149.6 125.8-232.2 177.2c-82.7 51.4-170.1 94.7-260.7 129.1c-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500c96.1-2.1 191.8-13.3 285.4-33.6c93.6-20.2 185-49.5 272.5-87.2c87.6-37.7 171.3-83.8 249.6-137.3c78.4-53.5 151.5-114.5 217.9-181.7c66.5-67.2 126.4-140.7 178.6-218.9c52.3-78.3 96.9-161.4 133-247.9c36.1-86.5 63.8-176.2 82.6-267.6c18.8-91.4 28.6-184.4 29.6-277.4c0.3-27.6 23.2-48.7 50.8-48.4s49.5 21.8 49.2 49.5c0 0.7 0 1.3-0.1 2L1549.2 51.6z'/%3E%3Cg id='g'%3E%3Cuse href='%23s' transform='scale(0.12) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.2) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.25) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(0.3) rotate(-20)'/%3E%3Cuse href='%23s' transform='scale(0.4) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(0.5) rotate(20)'/%3E%3Cuse href='%23s' transform='scale(0.6) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.7) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.835) rotate(-40)'/%3E%3Cuse href='%23s' transform='scale(0.9) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(1.05) rotate(25)'/%3E%3Cuse href='%23s' transform='scale(1.2) rotate(8)'/%3E%3Cuse href='%23s' transform='scale(1.333) rotate(-60)'/%3E%3Cuse href='%23s' transform='scale(1.45) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(1.6) rotate(10)'/%3E%3C/g%3E%3C/defs%3E%3Cg transform='translate(1920 0)'%3E%3Cg transform='translate(0 1245)'%3E%3Ccircle fill='url(%23a)' r='3000'/%3E%3Cg opacity='0.5'%3E%3Ccircle fill='url(%23a)' r='2000'/%3E%3Ccircle fill='url(%23a)' r='1800'/%3E%3Ccircle fill='url(%23a)' r='1700'/%3E%3Ccircle fill='url(%23a)' r='1651'/%3E%3Ccircle fill='url(%23a)' r='1450'/%3E%3Ccircle fill='url(%23a)' r='1250'/%3E%3Ccircle fill='url(%23a)' r='1175'/%3E%3Ccircle fill='url(%23a)' r='900'/%3E%3Ccircle fill='url(%23a)' r='750'/%3E%3Ccircle fill='url(%23a)' r='500'/%3E%3Ccircle fill='url(%23a)' r='380'/%3E%3Ccircle fill='url(%23a)' r='250'/%3E%3C/g%3E%3Cg %3E%3Cuse href='%23g' transform='rotate(10)'/%3E%3Cuse href='%23g' transform='rotate(120)'/%3E%3Cuse href='%23g' transform='rotate(240)'/%3E%3C/g%3E%3Ccircle fill-opacity='0.51' fill='url(%23a)' r='3000'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");background-attachment:fixed;background-size:cover}}.backdrop-blur.svelte-1gyn11y.svelte-1gyn11y{height:100%;width:100%;-webkit-backdrop-filter:blur(5rem);backdrop-filter:blur(5rem)}.hero-content.svelte-1gyn11y.svelte-1gyn11y{z-index:10}svg.svelte-1gyn11y text.svelte-1gyn11y{font-family:"Ubuntu";letter-spacing:10px;font-weight:800;fill:white;stroke:white;stroke-width:4;filter:drop-shadow(0px 3px 3px rgba(0, 0, 0, 1));-webkit-animation:svelte-1gyn11y-textAnimate 5s linear;animation:svelte-1gyn11y-textAnimate 5s linear}@-webkit-keyframes svelte-1gyn11y-textAnimate{0%{stroke-dasharray:0 50%;stroke-dashoffset:20%;fill:var(--color-1)}10%{fill:var(--color-2)}20%{fill:var(--color-3)}30%{fill:var(--color-4)}40%{fill:var(--color-5)}50%{fill:var(--color-6)}60%{fill:var(--color-7)}100%{stroke-dasharray:50% 0;stroke-dashoffstet:-20%;fill:white}}@keyframes svelte-1gyn11y-textAnimate{0%{stroke-dasharray:0 50%;stroke-dashoffset:20%;fill:var(--color-1)}10%{fill:var(--color-2)}20%{fill:var(--color-3)}30%{fill:var(--color-4)}40%{fill:var(--color-5)}50%{fill:var(--color-6)}60%{fill:var(--color-7)}100%{stroke-dasharray:50% 0;stroke-dashoffstet:-20%;fill:white}}`,
+  map: `{"version":3,"file":"Hero.svelte","sources":["Hero.svelte"],"sourcesContent":["<script>\\r\\n  import Saos from \\"saos/src/Saos.svelte\\";\\r\\n  import { onMount } from \\"svelte\\";\\r\\n  const contactInformation = [\\r\\n    {\\r\\n      link: \\"https://github.com/dylancl\\",\\r\\n      icon: \\"icons/github.svg\\",\\r\\n      name: \\"GitHub\\",\\r\\n      alt: \\"GitHub\\",\\r\\n    },\\r\\n    {\\r\\n      link: \\"https://www.linkedin.com/in/dylan-cathelijn-00551214b/\\",\\r\\n      icon: \\"icons/linkedin.svg\\",\\r\\n      name: \\"LinkedIn\\",\\r\\n      alt: \\"LinkedIn\\",\\r\\n    },\\r\\n    {\\r\\n      link: \\"mailto:dylan_cathelyn@hotmail.be\\",\\r\\n      icon: \\"icons/email.svg\\",\\r\\n      name: \\"Email\\",\\r\\n      alt: \\"Email\\",\\r\\n    },\\r\\n  ];\\r\\n\\r\\n  $: innerWidth = 0;\\r\\n\\r\\n  import HALO from \\"vanta/dist/vanta.halo.min.js\\";\\r\\n  onMount(() => {\\r\\n    if (innerWidth > 800) {\\r\\n      const vanta = HALO({\\r\\n        el: document.querySelector(\\".vanta\\"),\\r\\n        mouseControls: true,\\r\\n        touchControls: true,\\r\\n        gyroControls: true,\\r\\n        minHeight: 200.0,\\r\\n        scaleMobile: 0.5,\\r\\n        yOffsetMobile: -0.8,\\r\\n        ringFactor: 0.1,\\r\\n        minWidth: 200.0,\\r\\n        speed: 0.1,\\r\\n        baseColor: 0x155aff,\\r\\n        amplitudeFactor: 0.3,\\r\\n        backgroundColor: 0x0,\\r\\n        xOffset: 0,\\r\\n        yOffset: -4.2,\\r\\n        size: 20.0,\\r\\n      });\\r\\n    }\\r\\n  });\\r\\n<\/script>\\r\\n\\r\\n<svelte:window bind:innerWidth />\\r\\n\\r\\n<svelte:head>\\r\\n  <link rel=\\"preconnect\\" href=\\"https://fonts.googleapis.com\\" />\\r\\n  <link rel=\\"preconnect\\" href=\\"https://fonts.gstatic.com\\" crossorigin />\\r\\n  <link\\r\\n    href=\\"https://fonts.googleapis.com/css2?family=Ubuntu:wght@700;900&display=swap\\"\\r\\n    rel=\\"stylesheet\\"\\r\\n  />\\r\\n  <script\\r\\n    src=\\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js\\"><\/script>\\r\\n</svelte:head>\\r\\n\\r\\n<div id=\\"hero\\" class=\\"hero vanta min-h-screen bg-base-200\\">\\r\\n  <div class=\\"backdrop-blur flex justify-center items-center\\">\\r\\n    <div class=\\"text-center hero-content container w-full\\">\\r\\n      <div class=\\"w-full\\">\\r\\n        <svg class=\\"h-50 sm:h-64 md:h-72 lg:h-100 w-full drop-shadow-2xl\\">\\r\\n          <text\\r\\n            class=\\"text-7xl sm:text-8xl md:text-9xl xl:text-11xl md:font-extrabold\\"\\r\\n            x=\\"0\\"\\r\\n            y=\\"0\\"\\r\\n            fill=\\"white\\"\\r\\n          >\\r\\n            <tspan x=\\"0\\" y=\\"40%\\">Dylan</tspan>\\r\\n            <tspan x=\\"0\\" y=\\"90%\\">Cathelijn</tspan>\\r\\n          </text>\\r\\n        </svg>\\r\\n        <p class=\\"text-left text-lg text-white font-bold prose md:ml-4\\">\\r\\n          full-stack developer based in Belgium\\r\\n        </p>\\r\\n        <div\\r\\n          class=\\"grid grid-cols-1 md:grid-cols-3 md:ml-4 mt-4 w-full md:w-1/2 lg:w-1/3 gap-7\\"\\r\\n        >\\r\\n          {#each contactInformation as contactInfo}\\r\\n            <div>\\r\\n              <a href={contactInfo.link}>\\r\\n                <div\\r\\n                  class=\\"card bg-base-200 p-0 rounded-none text-white shadow-2xl\\"\\r\\n                >\\r\\n                  <div class=\\"card-body p-3\\">\\r\\n                    <p class=\\"font-bold uppercase\\">\\r\\n                      {contactInfo.name}\\r\\n                    </p>\\r\\n                  </div>\\r\\n                </div>\\r\\n              </a>\\r\\n            </div>\\r\\n          {/each}\\r\\n        </div>\\r\\n      </div>\\r\\n    </div>\\r\\n  </div>\\r\\n</div>\\r\\n\\r\\n<style>\\r\\n  :root {\\r\\n    --color-1: #f72585ff;\\r\\n    --color-2: #b5179eff;\\r\\n    --color-3: #7209b7ff;\\r\\n    --color-4: #560badff;\\r\\n    --color-5: #480ca8ff;\\r\\n    --color-6: #3a0ca3ff;\\r\\n    --color-7: #3f37c9ff;\\r\\n    --color-8: #4361eeff;\\r\\n    --color-9: #4895efff;\\r\\n    --color-10: #4cc9f0ff;\\r\\n  }\\r\\n\\r\\n  .card {\\r\\n    box-shadow: 0 0 var(--color-4);\\r\\n    transition: 0.5s ease;\\r\\n  }\\r\\n\\r\\n  .card:hover {\\r\\n    box-shadow: -6px 6px var(--color-7);\\r\\n    transform: translate(6px, -6px);\\r\\n  }\\r\\n\\r\\n  .hero {\\r\\n    background-color: black;\\r\\n  }\\r\\n\\r\\n  @media screen and (max-width: 768px) {\\r\\n    .hero {\\r\\n      background-color: #000000;\\r\\n      background-color: #000000;\\r\\n      background-image: url(\\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1500'%3E%3Cdefs%3E%3CradialGradient id='a' gradientUnits='objectBoundingBox'%3E%3Cstop offset='0' stop-color='%23151515'/%3E%3Cstop offset='1' stop-color='%23000000'/%3E%3C/radialGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='0' y1='750' x2='1550' y2='750'%3E%3Cstop offset='0' stop-color='%230b0b0b'/%3E%3Cstop offset='1' stop-color='%23000000'/%3E%3C/linearGradient%3E%3Cpath id='s' fill='url(%23b)' d='M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6c-24.1 96-57.4 189.4-99.3 278.6c-41.9 89.2-92.4 174.1-150.3 253.3c-58 79.2-123.4 152.6-195.1 219c-71.7 66.4-149.6 125.8-232.2 177.2c-82.7 51.4-170.1 94.7-260.7 129.1c-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500c96.1-2.1 191.8-13.3 285.4-33.6c93.6-20.2 185-49.5 272.5-87.2c87.6-37.7 171.3-83.8 249.6-137.3c78.4-53.5 151.5-114.5 217.9-181.7c66.5-67.2 126.4-140.7 178.6-218.9c52.3-78.3 96.9-161.4 133-247.9c36.1-86.5 63.8-176.2 82.6-267.6c18.8-91.4 28.6-184.4 29.6-277.4c0.3-27.6 23.2-48.7 50.8-48.4s49.5 21.8 49.2 49.5c0 0.7 0 1.3-0.1 2L1549.2 51.6z'/%3E%3Cg id='g'%3E%3Cuse href='%23s' transform='scale(0.12) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.2) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.25) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(0.3) rotate(-20)'/%3E%3Cuse href='%23s' transform='scale(0.4) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(0.5) rotate(20)'/%3E%3Cuse href='%23s' transform='scale(0.6) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.7) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.835) rotate(-40)'/%3E%3Cuse href='%23s' transform='scale(0.9) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(1.05) rotate(25)'/%3E%3Cuse href='%23s' transform='scale(1.2) rotate(8)'/%3E%3Cuse href='%23s' transform='scale(1.333) rotate(-60)'/%3E%3Cuse href='%23s' transform='scale(1.45) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(1.6) rotate(10)'/%3E%3C/g%3E%3C/defs%3E%3Cg transform='translate(1920 0)'%3E%3Cg transform='translate(0 1245)'%3E%3Ccircle fill='url(%23a)' r='3000'/%3E%3Cg opacity='0.5'%3E%3Ccircle fill='url(%23a)' r='2000'/%3E%3Ccircle fill='url(%23a)' r='1800'/%3E%3Ccircle fill='url(%23a)' r='1700'/%3E%3Ccircle fill='url(%23a)' r='1651'/%3E%3Ccircle fill='url(%23a)' r='1450'/%3E%3Ccircle fill='url(%23a)' r='1250'/%3E%3Ccircle fill='url(%23a)' r='1175'/%3E%3Ccircle fill='url(%23a)' r='900'/%3E%3Ccircle fill='url(%23a)' r='750'/%3E%3Ccircle fill='url(%23a)' r='500'/%3E%3Ccircle fill='url(%23a)' r='380'/%3E%3Ccircle fill='url(%23a)' r='250'/%3E%3C/g%3E%3Cg %3E%3Cuse href='%23g' transform='rotate(10)'/%3E%3Cuse href='%23g' transform='rotate(120)'/%3E%3Cuse href='%23g' transform='rotate(240)'/%3E%3C/g%3E%3Ccircle fill-opacity='0.51' fill='url(%23a)' r='3000'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\\");\\r\\n      background-attachment: fixed;\\r\\n      background-size: cover;\\r\\n    }\\r\\n  }\\r\\n\\r\\n  .backdrop-blur {\\r\\n    height: 100%;\\r\\n    width: 100%;\\r\\n    -webkit-backdrop-filter: blur(5rem);\\r\\n            backdrop-filter: blur(5rem);\\r\\n  }\\r\\n\\r\\n  .hero-content {\\r\\n    z-index: 10;\\r\\n  }\\r\\n\\r\\n  svg text {\\r\\n    font-family: \\"Ubuntu\\";\\r\\n    letter-spacing: 10px;\\r\\n    font-weight: 800;\\r\\n    fill: white;\\r\\n    stroke: white;\\r\\n    /* letter-spacing: 0.1em; */\\r\\n    stroke-width: 4;\\r\\n    filter: drop-shadow(0px 3px 3px rgba(0, 0, 0, 1));\\r\\n    -webkit-animation: textAnimate 5s linear;\\r\\n            animation: textAnimate 5s linear;\\r\\n  }\\r\\n\\r\\n  @-webkit-keyframes textAnimate {\\r\\n    0% {\\r\\n      stroke-dasharray: 0 50%;\\r\\n      stroke-dashoffset: 20%;\\r\\n      fill: var(--color-1);\\r\\n    }\\r\\n\\r\\n    10% {\\r\\n      fill: var(--color-2);\\r\\n    }\\r\\n\\r\\n    20% {\\r\\n      fill: var(--color-3);\\r\\n    }\\r\\n\\r\\n    30% {\\r\\n      fill: var(--color-4);\\r\\n    }\\r\\n\\r\\n    40% {\\r\\n      fill: var(--color-5);\\r\\n    }\\r\\n\\r\\n    50% {\\r\\n      fill: var(--color-6);\\r\\n    }\\r\\n\\r\\n    60% {\\r\\n      fill: var(--color-7);\\r\\n    }\\r\\n\\r\\n    100% {\\r\\n      stroke-dasharray: 50% 0;\\r\\n      stroke-dashoffstet: -20%;\\r\\n      fill: white;\\r\\n    }\\r\\n  }\\r\\n\\r\\n  @keyframes textAnimate {\\r\\n    0% {\\r\\n      stroke-dasharray: 0 50%;\\r\\n      stroke-dashoffset: 20%;\\r\\n      fill: var(--color-1);\\r\\n    }\\r\\n\\r\\n    10% {\\r\\n      fill: var(--color-2);\\r\\n    }\\r\\n\\r\\n    20% {\\r\\n      fill: var(--color-3);\\r\\n    }\\r\\n\\r\\n    30% {\\r\\n      fill: var(--color-4);\\r\\n    }\\r\\n\\r\\n    40% {\\r\\n      fill: var(--color-5);\\r\\n    }\\r\\n\\r\\n    50% {\\r\\n      fill: var(--color-6);\\r\\n    }\\r\\n\\r\\n    60% {\\r\\n      fill: var(--color-7);\\r\\n    }\\r\\n\\r\\n    100% {\\r\\n      stroke-dasharray: 50% 0;\\r\\n      stroke-dashoffstet: -20%;\\r\\n      fill: white;\\r\\n    }\\r\\n  }</style>\\r\\n"],"names":[],"mappings":"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"}`
+};
+var Hero = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  const contactInformation = [
+    {
+      link: "https://github.com/dylancl",
+      icon: "icons/github.svg",
+      name: "GitHub",
+      alt: "GitHub"
+    },
+    {
+      link: "https://www.linkedin.com/in/dylan-cathelijn-00551214b/",
+      icon: "icons/linkedin.svg",
+      name: "LinkedIn",
+      alt: "LinkedIn"
+    },
+    {
+      link: "mailto:dylan_cathelyn@hotmail.be",
+      icon: "icons/email.svg",
+      name: "Email",
+      alt: "Email"
+    }
+  ];
+  $$result.css.add(css$4);
+  return `
+
+${$$result.head += `<link rel="${"preconnect"}" href="${"https://fonts.googleapis.com"}" data-svelte="svelte-tt99li"><link rel="${"preconnect"}" href="${"https://fonts.gstatic.com"}" crossorigin data-svelte="svelte-tt99li"><link href="${"https://fonts.googleapis.com/css2?family=Ubuntu:wght@700;900&display=swap"}" rel="${"stylesheet"}" data-svelte="svelte-tt99li"><script src="${"https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"}" data-svelte="svelte-tt99li"><\/script>`, ""}
+
+<div id="${"hero"}" class="${"hero vanta min-h-screen bg-base-200 svelte-1gyn11y"}"><div class="${"backdrop-blur flex justify-center items-center svelte-1gyn11y"}"><div class="${"text-center hero-content container w-full svelte-1gyn11y"}"><div class="${"w-full"}"><svg class="${"h-50 sm:h-64 md:h-72 lg:h-100 w-full drop-shadow-2xl svelte-1gyn11y"}"><text class="${"text-7xl sm:text-8xl md:text-9xl xl:text-11xl md:font-extrabold svelte-1gyn11y"}" x="${"0"}" y="${"0"}" fill="${"white"}"><tspan x="${"0"}" y="${"40%"}">Dylan</tspan>
+            <tspan x="${"0"}" y="${"90%"}">Cathelijn</tspan></text></svg>
+        <p class="${"text-left text-lg text-white font-bold prose md:ml-4"}">full-stack developer based in Belgium
+        </p>
+        <div class="${"grid grid-cols-1 md:grid-cols-3 md:ml-4 mt-4 w-full md:w-1/2 lg:w-1/3 gap-7"}">${each(contactInformation, (contactInfo) => `<div><a${add_attribute("href", contactInfo.link, 0)}><div class="${"card bg-base-200 p-0 rounded-none text-white shadow-2xl svelte-1gyn11y"}"><div class="${"card-body p-3"}"><p class="${"font-bold uppercase"}">${escape(contactInfo.name)}
+                    </p></div>
+                </div></a>
+            </div>`)}</div></div></div></div>
+</div>`;
+});
+var About$1 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  return `<div id="${"about"}" class="${"container mx-auto"}"><div class="${"my-20"}">${validate_component(Saos, "Saos").$$render($$result, {
+    once: true,
+    animation: "fade-in-bottom 1s ease-in-out both",
+    css_animation: "height: 100%"
+  }, {}, {
+    default: () => `<h1 class="${"text-4xl my-8 font-bold text-white"}">About me</h1>
+      <p class="${"text-lg bg-base-200 p-5 rounded-none leading-normal text-white "}">Hi \u{1F44B}, I&#39;m Dylan Cathelijn. I\u2019m a 22 yr old aspiring fullstack web
+        developer living in Belgium. Since the age of 10 I&#39;ve been obsessed with
+        anything relating to computers, and eventually found my passion to be
+        making websites. I&#39;m currently enrolled at Arteveldehogeschool in the
+        Programming course where I&#39;m sharpening my skills and learning to work
+        with modern webtechnologies. I&#39;m fortunate enough to live in an age
+        where I&#39;m able to find a ton of information online and use that
+        information to teach myself new things. I&#39;m passionate about learning
+        new technologies, and I&#39;m always looking for new ways to improve myself.
+      </p>`
+  })}</div></div>`;
 });
 var technologies = [
   {
@@ -3104,202 +3226,180 @@ var technologies = [
     icon: "icons/passport.svg"
   }
 ];
-var css$2 = {
-  code: ".overlay.svelte-omfzo3{position:fixed;top:0;width:100%;height:100%;background:rgba(0, 0, 0, 0.6);z-index:99;display:flex;justify-content:center;align-items:center}.aa-popup.svelte-omfzo3{box-shadow:3px 3px 17px 0 rgba(0, 0, 0, 0.17);min-width:200px;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards;max-height:calc(100% - 10px);display:flex;flex-direction:column;justify-content:space-between}.footer.svelte-omfzo3{margin:0 24px 24px 24px;display:flex;justify-content:flex-end}@media(max-width: 480px){.popup.svelte-omfzo3{height:calc(100% - 32px);width:calc(100% - 32px)}}",
-  map: `{"version":3,"file":"Modal.svelte","sources":["Modal.svelte"],"sourcesContent":["<script>\\r\\n    import { onMount } from \\"svelte\\";\\r\\n    import { fade, fly } from \\"svelte/transition\\";\\r\\n    import { createEventDispatcher } from \\"svelte\\";\\r\\n\\r\\n    export let header = \\"\\";\\r\\n    export let tags = \\"\\";\\r\\n    export let projectLink;\\r\\n    export let isOpen = false;\\r\\n\\r\\n\\r\\n    let popupRef;\\r\\n    let footerRef = null;\\r\\n    let headerRef = null;\\r\\n    let overflowState = \\"\\";\\r\\n    const dispatch = createEventDispatcher();\\r\\n    const close = () => {\\r\\n        dispatch(\\"close\\", \\"\\");\\r\\n    };\\r\\n\\r\\n    const handleKeyDown = (event) => {\\r\\n        if (event.keyCode === 27) close();\\r\\n    };\\r\\n\\r\\n    onMount(() => {\\r\\n        window.addEventListener(\\"keydown\\", handleKeyDown);\\r\\n        document.body.appendChild(popupRef);\\r\\n        return () => {\\r\\n            window.removeEventListener(\\"keydown\\", handleKeyDown);\\r\\n            document.body.removeChild(popupRef);\\r\\n        };\\r\\n    });\\r\\n    $: {\\r\\n        if (typeof window !== \\"undefined\\") {\\r\\n            if (isOpen) {\\r\\n                overflowState = document.body.style.overflow;\\r\\n                document.body.style.overflow = \\"hidden\\";\\r\\n            } else {\\r\\n                document.body.style.overflow = overflowState;\\r\\n            }\\r\\n        }\\r\\n    }\\r\\n<\/script>\\r\\n\\r\\n<div>\\r\\n    <div bind:this={popupRef}>\\r\\n        {#if isOpen}\\r\\n            <div\\r\\n                class={\`overlay \${$$props.class || \\"\\"}\`}\\r\\n                transition:fade|local\\r\\n                on:click={close}\\r\\n            >\\r\\n                <div\\r\\n                    class=\\"aa-popup px-8 pt-4 bg-base-200 max-w-screen-xl\\"\\r\\n                    transition:fade|local={{\\r\\n                        duration: 300,\\r\\n                        y: -500,\\r\\n                        opacity: 0.9,\\r\\n                    }}\\r\\n                    on:click={(e) => e.stopPropagation()}\\r\\n                >\\r\\n                    <div class=\\"flex flex-wrap justify-between items-center -mx-2\\">\\r\\n                        <div>\\r\\n                            {#if tags}\\r\\n                                {@html tags}\\r\\n                            {/if}\\r\\n                        </div>\\r\\n                        <a target=\\"_blank\\" href={projectLink}><img class=\\"h-8\\" src={projectLink.includes('https://github.com') ? '/icons/github.svg' : '/icons/website.svg'} alt=\\"GitHub icon\\"></a>\\r\\n                    </div>\\r\\n                    <div class=\\"mb-3\\" class:header={header || !Boolean(headerRef)}>\\r\\n                        {#if header}\\r\\n                            <h1 class=\\"text-2xl text-gray-300 font-bold\\">{header}</h1>\\r\\n                        {:else}\\r\\n                            <slot name=\\"header\\">\\r\\n                                <div bind:this={headerRef} />\\r\\n                            </slot>\\r\\n                        {/if}\\r\\n                    </div>\\r\\n\\r\\n                    <div class=\\"content mb-3 overflow-y-hidden\\">\\r\\n                        <p class=\\"text-gray-300\\">\\r\\n                            <slot />\\r\\n                        </p>\\r\\n                    </div>\\r\\n                </div>\\r\\n            </div>\\r\\n        {/if}\\r\\n    </div>\\r\\n</div>\\r\\n\\r\\n<style>\\r\\n    .overlay {\\r\\n        position: fixed;\\r\\n        top: 0;\\r\\n        width: 100%;\\r\\n        height: 100%;\\r\\n        background: rgba(0, 0, 0, 0.6);\\r\\n\\r\\n        z-index: 99;\\r\\n        display: flex;\\r\\n        justify-content: center;\\r\\n        align-items: center;\\r\\n    }\\r\\n\\r\\n    .aa-popup {\\r\\n        box-shadow: 3px 3px 17px 0 rgba(0, 0, 0, 0.17);\\r\\n        min-width: 200px;\\r\\n        -webkit-animation-fill-mode: forwards;\\r\\n                animation-fill-mode: forwards;\\r\\n        max-height: calc(100% - 10px);\\r\\n        display: flex;\\r\\n        flex-direction: column;\\r\\n        justify-content: space-between;\\r\\n    }\\r\\n\\r\\n    .footer {\\r\\n        margin: 0 24px 24px 24px;\\r\\n        display: flex;\\r\\n        justify-content: flex-end;\\r\\n    }\\r\\n    @media (max-width: 480px) {\\r\\n        .popup {\\r\\n            height: calc(100% - 32px);\\r\\n            width: calc(100% - 32px);\\r\\n        }\\r\\n    }</style>\\r\\n"],"names":[],"mappings":"AA2FI,QAAQ,cAAC,CAAC,AACN,QAAQ,CAAE,KAAK,CACf,GAAG,CAAE,CAAC,CACN,KAAK,CAAE,IAAI,CACX,MAAM,CAAE,IAAI,CACZ,UAAU,CAAE,KAAK,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,GAAG,CAAC,CAE9B,OAAO,CAAE,EAAE,CACX,OAAO,CAAE,IAAI,CACb,eAAe,CAAE,MAAM,CACvB,WAAW,CAAE,MAAM,AACvB,CAAC,AAED,SAAS,cAAC,CAAC,AACP,UAAU,CAAE,GAAG,CAAC,GAAG,CAAC,IAAI,CAAC,CAAC,CAAC,KAAK,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,IAAI,CAAC,CAC9C,SAAS,CAAE,KAAK,CAChB,2BAA2B,CAAE,QAAQ,CAC7B,mBAAmB,CAAE,QAAQ,CACrC,UAAU,CAAE,KAAK,IAAI,CAAC,CAAC,CAAC,IAAI,CAAC,CAC7B,OAAO,CAAE,IAAI,CACb,cAAc,CAAE,MAAM,CACtB,eAAe,CAAE,aAAa,AAClC,CAAC,AAED,OAAO,cAAC,CAAC,AACL,MAAM,CAAE,CAAC,CAAC,IAAI,CAAC,IAAI,CAAC,IAAI,CACxB,OAAO,CAAE,IAAI,CACb,eAAe,CAAE,QAAQ,AAC7B,CAAC,AACD,MAAM,AAAC,YAAY,KAAK,CAAC,AAAC,CAAC,AACvB,MAAM,cAAC,CAAC,AACJ,MAAM,CAAE,KAAK,IAAI,CAAC,CAAC,CAAC,IAAI,CAAC,CACzB,KAAK,CAAE,KAAK,IAAI,CAAC,CAAC,CAAC,IAAI,CAAC,AAC5B,CAAC,AACL,CAAC"}`
+var css$3 = {
+  code: ".card.svelte-1l7ztki{box-shadow:0 0 var(--color-4);transition:0.5s ease}.card.svelte-1l7ztki:hover{box-shadow:-6px 6px var(--color-7);transform:translate(6px, -6px)}",
+  map: `{"version":3,"file":"Technologies.svelte","sources":["Technologies.svelte"],"sourcesContent":["<script>\\r\\n  import Saos from \\"saos/src/Saos.svelte\\";\\r\\n  import technologies from \\"$lib/tech.json\\";\\r\\n<\/script>\\r\\n\\r\\n<div id=\\"tech\\" class=\\"my-20 container mx-auto\\">\\r\\n  <Saos\\r\\n    animation={\\"fade-in-bottom 1s ease-in-out both\\"}\\r\\n    css_animation={\\"height: 100%\\"}\\r\\n  >\\r\\n    <h1 class=\\"text-4xl my-8 font-bold text-white\\">Technologies I've used</h1>\\r\\n    <div class=\\"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch\\">\\r\\n      {#each technologies as tech}\\r\\n        <div\\r\\n          class=\\"card bordered bg-base-200 px-4 flex flex-row justify-between items-center rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105\\"\\r\\n        >\\r\\n          <p class=\\"text-lg font-bold uppercase\\">{tech.name}</p>\\r\\n          <img class=\\"w-10 h-16\\" src={tech.icon} alt=\\"\\" />\\r\\n        </div>\\r\\n      {/each}\\r\\n    </div>\\r\\n  </Saos>\\r\\n</div>\\r\\n\\r\\n<style>\\r\\n  .card {\\r\\n    box-shadow: 0 0 var(--color-4);\\r\\n    transition: 0.5s ease;\\r\\n  }\\r\\n\\r\\n  .card:hover {\\r\\n    box-shadow: -6px 6px var(--color-7);\\r\\n    transform: translate(6px, -6px);\\r\\n  }</style>\\r\\n"],"names":[],"mappings":"AAyBE,KAAK,eAAC,CAAC,AACL,UAAU,CAAE,CAAC,CAAC,CAAC,CAAC,IAAI,SAAS,CAAC,CAC9B,UAAU,CAAE,IAAI,CAAC,IAAI,AACvB,CAAC,AAED,oBAAK,MAAM,AAAC,CAAC,AACX,UAAU,CAAE,IAAI,CAAC,GAAG,CAAC,IAAI,SAAS,CAAC,CACnC,SAAS,CAAE,UAAU,GAAG,CAAC,CAAC,IAAI,CAAC,AACjC,CAAC"}`
 };
-var Modal = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-  let { header = "" } = $$props;
-  let { tags = "" } = $$props;
-  let { projectLink } = $$props;
-  let { isOpen = false } = $$props;
-  let popupRef;
-  let headerRef = null;
-  let overflowState = "";
-  createEventDispatcher();
-  if ($$props.header === void 0 && $$bindings.header && header !== void 0)
-    $$bindings.header(header);
-  if ($$props.tags === void 0 && $$bindings.tags && tags !== void 0)
-    $$bindings.tags(tags);
-  if ($$props.projectLink === void 0 && $$bindings.projectLink && projectLink !== void 0)
-    $$bindings.projectLink(projectLink);
-  if ($$props.isOpen === void 0 && $$bindings.isOpen && isOpen !== void 0)
-    $$bindings.isOpen(isOpen);
-  $$result.css.add(css$2);
-  {
-    {
-      if (typeof window !== "undefined") {
-        if (isOpen) {
-          overflowState = document.body.style.overflow;
-          document.body.style.overflow = "hidden";
-        } else {
-          document.body.style.overflow = overflowState;
-        }
-      }
-    }
-  }
-  return `<div><div${add_attribute("this", popupRef, 0)}>${isOpen ? `<div class="${escape(null_to_empty(`overlay ${$$props.class || ""}`)) + " svelte-omfzo3"}"><div class="${"aa-popup px-8 pt-4 bg-base-200 max-w-screen-xl svelte-omfzo3"}"><div class="${"flex flex-wrap justify-between items-center -mx-2"}"><div>${tags ? `<!-- HTML_TAG_START -->${tags}<!-- HTML_TAG_END -->` : ``}</div>
-                        <a target="${"_blank"}"${add_attribute("href", projectLink, 0)}><img class="${"h-8"}"${add_attribute("src", projectLink.includes("https://github.com") ? "/icons/github.svg" : "/icons/website.svg", 0)} alt="${"GitHub icon"}"></a></div>
-                    <div class="${["mb-3", header || !Boolean(headerRef) ? "header" : ""].join(" ").trim()}">${header ? `<h1 class="${"text-2xl text-gray-300 font-bold"}">${escape(header)}</h1>` : `${slots.header ? slots.header({}) : `
-                                <div${add_attribute("this", headerRef, 0)}></div>
-                            `}`}</div>
-
-                    <div class="${"content mb-3 overflow-y-hidden"}"><p class="${"text-gray-300"}">${slots.default ? slots.default({}) : ``}</p></div></div></div>` : ``}</div>
-</div>`;
-});
-var css$1 = {
-  code: `:root{--color-1:#f72585ff;--color-2:#b5179eff;--color-3:#7209b7ff;--color-4:#560badff;--color-5:#480ca8ff;--color-6:#3a0ca3ff;--color-7:#3f37c9ff;--color-8:#4361eeff;--color-9:#4895efff;--color-10:#4cc9f0ff}.card.svelte-18th5ak.svelte-18th5ak{box-shadow:0 0 var(--color-4);transition:0.5s ease}.card.svelte-18th5ak.svelte-18th5ak:hover{box-shadow:-6px 6px var(--color-7);transform:translate(6px, -6px)}.hero.svelte-18th5ak.svelte-18th5ak{background-color:black}@media screen and (max-width: 768px){.hero.svelte-18th5ak.svelte-18th5ak{background-color:#000000;background-color:#000000;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1500'%3E%3Cdefs%3E%3CradialGradient id='a' gradientUnits='objectBoundingBox'%3E%3Cstop offset='0' stop-color='%23151515'/%3E%3Cstop offset='1' stop-color='%23000000'/%3E%3C/radialGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='0' y1='750' x2='1550' y2='750'%3E%3Cstop offset='0' stop-color='%230b0b0b'/%3E%3Cstop offset='1' stop-color='%23000000'/%3E%3C/linearGradient%3E%3Cpath id='s' fill='url(%23b)' d='M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6c-24.1 96-57.4 189.4-99.3 278.6c-41.9 89.2-92.4 174.1-150.3 253.3c-58 79.2-123.4 152.6-195.1 219c-71.7 66.4-149.6 125.8-232.2 177.2c-82.7 51.4-170.1 94.7-260.7 129.1c-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500c96.1-2.1 191.8-13.3 285.4-33.6c93.6-20.2 185-49.5 272.5-87.2c87.6-37.7 171.3-83.8 249.6-137.3c78.4-53.5 151.5-114.5 217.9-181.7c66.5-67.2 126.4-140.7 178.6-218.9c52.3-78.3 96.9-161.4 133-247.9c36.1-86.5 63.8-176.2 82.6-267.6c18.8-91.4 28.6-184.4 29.6-277.4c0.3-27.6 23.2-48.7 50.8-48.4s49.5 21.8 49.2 49.5c0 0.7 0 1.3-0.1 2L1549.2 51.6z'/%3E%3Cg id='g'%3E%3Cuse href='%23s' transform='scale(0.12) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.2) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.25) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(0.3) rotate(-20)'/%3E%3Cuse href='%23s' transform='scale(0.4) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(0.5) rotate(20)'/%3E%3Cuse href='%23s' transform='scale(0.6) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.7) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.835) rotate(-40)'/%3E%3Cuse href='%23s' transform='scale(0.9) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(1.05) rotate(25)'/%3E%3Cuse href='%23s' transform='scale(1.2) rotate(8)'/%3E%3Cuse href='%23s' transform='scale(1.333) rotate(-60)'/%3E%3Cuse href='%23s' transform='scale(1.45) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(1.6) rotate(10)'/%3E%3C/g%3E%3C/defs%3E%3Cg transform='translate(1920 0)'%3E%3Cg transform='translate(0 1245)'%3E%3Ccircle fill='url(%23a)' r='3000'/%3E%3Cg opacity='0.5'%3E%3Ccircle fill='url(%23a)' r='2000'/%3E%3Ccircle fill='url(%23a)' r='1800'/%3E%3Ccircle fill='url(%23a)' r='1700'/%3E%3Ccircle fill='url(%23a)' r='1651'/%3E%3Ccircle fill='url(%23a)' r='1450'/%3E%3Ccircle fill='url(%23a)' r='1250'/%3E%3Ccircle fill='url(%23a)' r='1175'/%3E%3Ccircle fill='url(%23a)' r='900'/%3E%3Ccircle fill='url(%23a)' r='750'/%3E%3Ccircle fill='url(%23a)' r='500'/%3E%3Ccircle fill='url(%23a)' r='380'/%3E%3Ccircle fill='url(%23a)' r='250'/%3E%3C/g%3E%3Cg %3E%3Cuse href='%23g' transform='rotate(10)'/%3E%3Cuse href='%23g' transform='rotate(120)'/%3E%3Cuse href='%23g' transform='rotate(240)'/%3E%3C/g%3E%3Ccircle fill-opacity='0.51' fill='url(%23a)' r='3000'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");background-attachment:fixed;background-size:cover}}.backdrop-blur.svelte-18th5ak.svelte-18th5ak{height:100%;width:100%;-webkit-backdrop-filter:blur(0.1rem);backdrop-filter:blur(0.1rem)}.hero-content.svelte-18th5ak.svelte-18th5ak{z-index:10}svg.svelte-18th5ak text.svelte-18th5ak{font-family:"Inter";letter-spacing:10px;fill:linear-gradient(to top, #30cfd0 0%, #330867 100%);stroke:var(--color-7);letter-spacing:0.1em;stroke-width:4;filter:drop-shadow(0px 3px 3px rgba(0, 0, 0, 1));-webkit-animation:svelte-18th5ak-textAnimate 10s cubic-bezier(0.86, 0, 0.07, 1) alternate;animation:svelte-18th5ak-textAnimate 10s cubic-bezier(0.86, 0, 0.07, 1) alternate}@-webkit-keyframes svelte-18th5ak-textAnimate{0%{stroke-dasharray:0 50%;stroke-dashoffset:20%;fill:var(--color-1)}10%{fill:var(--color-2)}20%{fill:var(--color-3)}30%{fill:var(--color-4)}40%{fill:var(--color-5)}50%{fill:var(--color-6)}60%{fill:var(--color-7)}100%{stroke-dasharray:50% 0;stroke-dashoffstet:-20%;fill:var(--color-7)}}@keyframes svelte-18th5ak-textAnimate{0%{stroke-dasharray:0 50%;stroke-dashoffset:20%;fill:var(--color-1)}10%{fill:var(--color-2)}20%{fill:var(--color-3)}30%{fill:var(--color-4)}40%{fill:var(--color-5)}50%{fill:var(--color-6)}60%{fill:var(--color-7)}100%{stroke-dasharray:50% 0;stroke-dashoffstet:-20%;fill:var(--color-7)}}`,
-  map: `{"version":3,"file":"Hero.svelte","sources":["Hero.svelte"],"sourcesContent":["<script>\\r\\n  import Saos from \\"saos/src/Saos.svelte\\";\\r\\n  import { onMount } from \\"svelte\\";\\r\\n  const contactInformation = [\\r\\n    {\\r\\n      link: \\"https://github.com/dylancl\\",\\r\\n      icon: \\"icons/github.svg\\",\\r\\n      name: \\"GitHub\\",\\r\\n      alt: \\"GitHub\\",\\r\\n    },\\r\\n    {\\r\\n      link: \\"https://www.linkedin.com/in/dylan-cathelijn-00551214b/\\",\\r\\n      icon: \\"icons/linkedin.svg\\",\\r\\n      name: \\"LinkedIn\\",\\r\\n      alt: \\"LinkedIn\\",\\r\\n    },\\r\\n    {\\r\\n      link: \\"mailto:dylan_cathelyn@hotmail.be\\",\\r\\n      icon: \\"icons/email.svg\\",\\r\\n      name: \\"Email\\",\\r\\n      alt: \\"Email\\",\\r\\n    },\\r\\n  ];\\r\\n\\r\\n  $: innerWidth = 0;\\r\\n\\r\\n  import HALO from \\"vanta/dist/vanta.halo.min.js\\";\\r\\n  onMount(() => {\\r\\n    if (innerWidth > 800) {\\r\\n      const vanta = HALO({\\r\\n        el: document.querySelector(\\".vanta\\"),\\r\\n        mouseControls: true,\\r\\n        touchControls: true,\\r\\n        gyroControls: true,\\r\\n        minHeight: 200.0,\\r\\n        scaleMobile: 0.5,\\r\\n        yOffsetMobile: -0.8,\\r\\n        minWidth: 200.0,\\r\\n        baseColor: 0x155aff,\\r\\n        amplitudeFactor: 1,\\r\\n        backgroundColor: 0x0,\\r\\n        xOffset: 0.6,\\r\\n        yOffset: -0.31,\\r\\n        size: 3.0,\\r\\n      });\\r\\n    }\\r\\n  });\\r\\n<\/script>\\r\\n\\r\\n<svelte:window bind:innerWidth />\\r\\n\\r\\n<svelte:head>\\r\\n  <link rel=\\"preconnect\\" href=\\"https://fonts.googleapis.com\\" />\\r\\n  <link rel=\\"preconnect\\" href=\\"https://fonts.gstatic.com\\" crossorigin />\\r\\n  <link\\r\\n    href=\\"https://fonts.googleapis.com/css2?family=Heebo:wght@700;900&display=swap\\"\\r\\n    rel=\\"stylesheet\\"\\r\\n  />\\r\\n  <script\\r\\n    src=\\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js\\"><\/script>\\r\\n</svelte:head>\\r\\n\\r\\n<div class=\\"hero vanta min-h-screen bg-base-200\\">\\r\\n  <div class=\\"backdrop-blur flex justify-center items-center\\">\\r\\n    <div class=\\"text-center hero-content w-full\\">\\r\\n      <div class=\\"w-full\\">\\r\\n        <svg class=\\"h-50 sm:h-64 md:h-72 lg:h-96 w-full drop-shadow-2xl\\">\\r\\n          <text\\r\\n            class=\\"text-7xl sm:text-8xl md:text-9xl xl:text-11xl md:font-extrabold\\"\\r\\n            x=\\"0\\"\\r\\n            y=\\"0\\"\\r\\n            fill=\\"#3f37c9ff\\"\\r\\n          >\\r\\n            <tspan x=\\"0\\" y=\\"40%\\">Dylan</tspan>\\r\\n            <tspan x=\\"0\\" y=\\"90%\\">Cathelijn</tspan>\\r\\n          </text>\\r\\n        </svg>\\r\\n        <p class=\\"text-left text-lg text-white font-bold prose md:ml-4\\">\\r\\n          full-stack developer based in Belgium\\r\\n        </p>\\r\\n        <div\\r\\n          class=\\"grid grid-cols-1 md:grid-cols-3 md:ml-4 mt-4 w-full md:w-1/2 lg:w-1/3 gap-7\\"\\r\\n        >\\r\\n          {#each contactInformation as contactInfo}\\r\\n            <div>\\r\\n              <Saos\\r\\n                once={true}\\r\\n                animation={\\"fade-in-fwd 1s ease-in-out both\\"}\\r\\n                css_animation={\\"animation-delay: 9s;\\"}\\r\\n              >\\r\\n                <a href={contactInfo.link}>\\r\\n                  <div\\r\\n                    class=\\"card bg-base-200 p-0 rounded-none text-white shadow-2xl\\"\\r\\n                  >\\r\\n                    <div class=\\"card-body p-3\\">\\r\\n                      <p class=\\"font-bold uppercase\\">\\r\\n                        {contactInfo.name}\\r\\n                      </p>\\r\\n                    </div>\\r\\n                  </div>\\r\\n                </a>\\r\\n              </Saos>\\r\\n            </div>\\r\\n          {/each}\\r\\n        </div>\\r\\n      </div>\\r\\n    </div>\\r\\n  </div>\\r\\n</div>\\r\\n\\r\\n<style>\\r\\n  :root {\\r\\n    --color-1: #f72585ff;\\r\\n    --color-2: #b5179eff;\\r\\n    --color-3: #7209b7ff;\\r\\n    --color-4: #560badff;\\r\\n    --color-5: #480ca8ff;\\r\\n    --color-6: #3a0ca3ff;\\r\\n    --color-7: #3f37c9ff;\\r\\n    --color-8: #4361eeff;\\r\\n    --color-9: #4895efff;\\r\\n    --color-10: #4cc9f0ff;\\r\\n  }\\r\\n\\r\\n  .card {\\r\\n    box-shadow: 0 0 var(--color-4);\\r\\n    transition: 0.5s ease;\\r\\n  }\\r\\n\\r\\n  .card:hover {\\r\\n    box-shadow: -6px 6px var(--color-7);\\r\\n    transform: translate(6px, -6px);\\r\\n  }\\r\\n\\r\\n  .hero {\\r\\n    background-color: black;\\r\\n  }\\r\\n\\r\\n  @media screen and (max-width: 768px) {\\r\\n    .hero {\\r\\n      background-color: #000000;\\r\\n      background-color: #000000;\\r\\n      background-image: url(\\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1500'%3E%3Cdefs%3E%3CradialGradient id='a' gradientUnits='objectBoundingBox'%3E%3Cstop offset='0' stop-color='%23151515'/%3E%3Cstop offset='1' stop-color='%23000000'/%3E%3C/radialGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='0' y1='750' x2='1550' y2='750'%3E%3Cstop offset='0' stop-color='%230b0b0b'/%3E%3Cstop offset='1' stop-color='%23000000'/%3E%3C/linearGradient%3E%3Cpath id='s' fill='url(%23b)' d='M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6c-24.1 96-57.4 189.4-99.3 278.6c-41.9 89.2-92.4 174.1-150.3 253.3c-58 79.2-123.4 152.6-195.1 219c-71.7 66.4-149.6 125.8-232.2 177.2c-82.7 51.4-170.1 94.7-260.7 129.1c-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500c96.1-2.1 191.8-13.3 285.4-33.6c93.6-20.2 185-49.5 272.5-87.2c87.6-37.7 171.3-83.8 249.6-137.3c78.4-53.5 151.5-114.5 217.9-181.7c66.5-67.2 126.4-140.7 178.6-218.9c52.3-78.3 96.9-161.4 133-247.9c36.1-86.5 63.8-176.2 82.6-267.6c18.8-91.4 28.6-184.4 29.6-277.4c0.3-27.6 23.2-48.7 50.8-48.4s49.5 21.8 49.2 49.5c0 0.7 0 1.3-0.1 2L1549.2 51.6z'/%3E%3Cg id='g'%3E%3Cuse href='%23s' transform='scale(0.12) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.2) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.25) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(0.3) rotate(-20)'/%3E%3Cuse href='%23s' transform='scale(0.4) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(0.5) rotate(20)'/%3E%3Cuse href='%23s' transform='scale(0.6) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.7) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.835) rotate(-40)'/%3E%3Cuse href='%23s' transform='scale(0.9) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(1.05) rotate(25)'/%3E%3Cuse href='%23s' transform='scale(1.2) rotate(8)'/%3E%3Cuse href='%23s' transform='scale(1.333) rotate(-60)'/%3E%3Cuse href='%23s' transform='scale(1.45) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(1.6) rotate(10)'/%3E%3C/g%3E%3C/defs%3E%3Cg transform='translate(1920 0)'%3E%3Cg transform='translate(0 1245)'%3E%3Ccircle fill='url(%23a)' r='3000'/%3E%3Cg opacity='0.5'%3E%3Ccircle fill='url(%23a)' r='2000'/%3E%3Ccircle fill='url(%23a)' r='1800'/%3E%3Ccircle fill='url(%23a)' r='1700'/%3E%3Ccircle fill='url(%23a)' r='1651'/%3E%3Ccircle fill='url(%23a)' r='1450'/%3E%3Ccircle fill='url(%23a)' r='1250'/%3E%3Ccircle fill='url(%23a)' r='1175'/%3E%3Ccircle fill='url(%23a)' r='900'/%3E%3Ccircle fill='url(%23a)' r='750'/%3E%3Ccircle fill='url(%23a)' r='500'/%3E%3Ccircle fill='url(%23a)' r='380'/%3E%3Ccircle fill='url(%23a)' r='250'/%3E%3C/g%3E%3Cg %3E%3Cuse href='%23g' transform='rotate(10)'/%3E%3Cuse href='%23g' transform='rotate(120)'/%3E%3Cuse href='%23g' transform='rotate(240)'/%3E%3C/g%3E%3Ccircle fill-opacity='0.51' fill='url(%23a)' r='3000'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\\");\\r\\n      background-attachment: fixed;\\r\\n      background-size: cover;\\r\\n    }\\r\\n  }\\r\\n\\r\\n  .backdrop-blur {\\r\\n    height: 100%;\\r\\n    width: 100%;\\r\\n    -webkit-backdrop-filter: blur(0.1rem);\\r\\n            backdrop-filter: blur(0.1rem);\\r\\n  }\\r\\n\\r\\n  .hero-content {\\r\\n    z-index: 10;\\r\\n  }\\r\\n\\r\\n  svg text {\\r\\n    font-family: \\"Inter\\";\\r\\n    letter-spacing: 10px;\\r\\n    fill: linear-gradient(to top, #30cfd0 0%, #330867 100%);\\r\\n    stroke: var(--color-7);\\r\\n    letter-spacing: 0.1em;\\r\\n    stroke-width: 4;\\r\\n    filter: drop-shadow(0px 3px 3px rgba(0, 0, 0, 1));\\r\\n    -webkit-animation: textAnimate 10s cubic-bezier(0.86, 0, 0.07, 1) alternate;\\r\\n            animation: textAnimate 10s cubic-bezier(0.86, 0, 0.07, 1) alternate;\\r\\n  }\\r\\n\\r\\n  @-webkit-keyframes textAnimate {\\r\\n    0% {\\r\\n      stroke-dasharray: 0 50%;\\r\\n      stroke-dashoffset: 20%;\\r\\n      fill: var(--color-1);\\r\\n    }\\r\\n\\r\\n    10% {\\r\\n      fill: var(--color-2);\\r\\n    }\\r\\n\\r\\n    20% {\\r\\n      fill: var(--color-3);\\r\\n    }\\r\\n\\r\\n    30% {\\r\\n      fill: var(--color-4);\\r\\n    }\\r\\n\\r\\n    40% {\\r\\n      fill: var(--color-5);\\r\\n    }\\r\\n\\r\\n    50% {\\r\\n      fill: var(--color-6);\\r\\n    }\\r\\n\\r\\n    60% {\\r\\n      fill: var(--color-7);\\r\\n    }\\r\\n\\r\\n    100% {\\r\\n      stroke-dasharray: 50% 0;\\r\\n      stroke-dashoffstet: -20%;\\r\\n      fill: var(--color-7);\\r\\n    }\\r\\n  }\\r\\n\\r\\n  @keyframes textAnimate {\\r\\n    0% {\\r\\n      stroke-dasharray: 0 50%;\\r\\n      stroke-dashoffset: 20%;\\r\\n      fill: var(--color-1);\\r\\n    }\\r\\n\\r\\n    10% {\\r\\n      fill: var(--color-2);\\r\\n    }\\r\\n\\r\\n    20% {\\r\\n      fill: var(--color-3);\\r\\n    }\\r\\n\\r\\n    30% {\\r\\n      fill: var(--color-4);\\r\\n    }\\r\\n\\r\\n    40% {\\r\\n      fill: var(--color-5);\\r\\n    }\\r\\n\\r\\n    50% {\\r\\n      fill: var(--color-6);\\r\\n    }\\r\\n\\r\\n    60% {\\r\\n      fill: var(--color-7);\\r\\n    }\\r\\n\\r\\n    100% {\\r\\n      stroke-dasharray: 50% 0;\\r\\n      stroke-dashoffstet: -20%;\\r\\n      fill: var(--color-7);\\r\\n    }\\r\\n  }</style>\\r\\n"],"names":[],"mappings":"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"}`
-};
-var Hero = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-  const contactInformation = [
-    {
-      link: "https://github.com/dylancl",
-      icon: "icons/github.svg",
-      name: "GitHub",
-      alt: "GitHub"
-    },
-    {
-      link: "https://www.linkedin.com/in/dylan-cathelijn-00551214b/",
-      icon: "icons/linkedin.svg",
-      name: "LinkedIn",
-      alt: "LinkedIn"
-    },
-    {
-      link: "mailto:dylan_cathelyn@hotmail.be",
-      icon: "icons/email.svg",
-      name: "Email",
-      alt: "Email"
-    }
-  ];
-  $$result.css.add(css$1);
-  return `
-
-${$$result.head += `<link rel="${"preconnect"}" href="${"https://fonts.googleapis.com"}" data-svelte="svelte-1gyjakw"><link rel="${"preconnect"}" href="${"https://fonts.gstatic.com"}" crossorigin data-svelte="svelte-1gyjakw"><link href="${"https://fonts.googleapis.com/css2?family=Heebo:wght@700;900&display=swap"}" rel="${"stylesheet"}" data-svelte="svelte-1gyjakw"><script src="${"https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"}" data-svelte="svelte-1gyjakw"><\/script>`, ""}
-
-<div class="${"hero vanta min-h-screen bg-base-200 svelte-18th5ak"}"><div class="${"backdrop-blur flex justify-center items-center svelte-18th5ak"}"><div class="${"text-center hero-content w-full svelte-18th5ak"}"><div class="${"w-full"}"><svg class="${"h-50 sm:h-64 md:h-72 lg:h-96 w-full drop-shadow-2xl svelte-18th5ak"}"><text class="${"text-7xl sm:text-8xl md:text-9xl xl:text-11xl md:font-extrabold svelte-18th5ak"}" x="${"0"}" y="${"0"}" fill="${"#3f37c9ff"}"><tspan x="${"0"}" y="${"40%"}">Dylan</tspan>
-            <tspan x="${"0"}" y="${"90%"}">Cathelijn</tspan></text></svg>
-        <p class="${"text-left text-lg text-white font-bold prose md:ml-4"}">full-stack developer based in Belgium
-        </p>
-        <div class="${"grid grid-cols-1 md:grid-cols-3 md:ml-4 mt-4 w-full md:w-1/2 lg:w-1/3 gap-7"}">${each(contactInformation, (contactInfo) => `<div>${validate_component(Saos, "Saos").$$render($$result, {
-    once: true,
-    animation: "fade-in-fwd 1s ease-in-out both",
-    css_animation: "animation-delay: 9s;"
+var Technologies = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  $$result.css.add(css$3);
+  return `<div id="${"tech"}" class="${"my-20 container mx-auto"}">${validate_component(Saos, "Saos").$$render($$result, {
+    animation: "fade-in-bottom 1s ease-in-out both",
+    css_animation: "height: 100%"
   }, {}, {
-    default: () => `<a${add_attribute("href", contactInfo.link, 0)}><div class="${"card bg-base-200 p-0 rounded-none text-white shadow-2xl svelte-18th5ak"}"><div class="${"card-body p-3"}"><p class="${"font-bold uppercase"}">${escape(contactInfo.name)}
-                      </p></div>
-                  </div></a>
-              `
+    default: () => `<h1 class="${"text-4xl my-8 font-bold text-white"}">Technologies I&#39;ve used</h1>
+    <div class="${"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch"}">${each(technologies, (tech) => `<div class="${"card bordered bg-base-200 px-4 flex flex-row justify-between items-center rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105 svelte-1l7ztki"}"><p class="${"text-lg font-bold uppercase"}">${escape(tech.name)}</p>
+          <img class="${"w-10 h-16"}"${add_attribute("src", tech.icon, 0)} alt="${""}">
+        </div>`)}</div>`
   })}
-            </div>`)}</div></div></div></div>
 </div>`;
 });
-var css = {
+var css$2 = {
   code: '.projectLink.svelte-1ih9el3 h1.svelte-1ih9el3::after{content:"";display:block;width:0;height:4px;margin-top:-0.3rem;background:var(--color-7);transition:width ease-in-out 0.5s}.projectLink.svelte-1ih9el3 h1.svelte-1ih9el3:hover::after{width:100%}.card.svelte-1ih9el3.svelte-1ih9el3{box-shadow:0 0 var(--color-4);transition:0.5s ease}.card.svelte-1ih9el3.svelte-1ih9el3:hover{box-shadow:-6px 6px var(--color-7);transform:translate(6px, -6px)}@-webkit-keyframes fade-in-fwd{0%{transform:translateZ(-80px);opacity:0}100%{transform:translateZ(0);opacity:1}}@keyframes fade-in-fwd{0%{transform:translateZ(-80px);opacity:0}100%{transform:translateZ(0);opacity:1}}@-webkit-keyframes fade-in-bottom{0%{transform:translateY(50px);opacity:0}100%{transform:translateY(0);opacity:1}}@keyframes fade-in-bottom{0%{transform:translateY(50px);opacity:0}100%{transform:translateY(0);opacity:1}}.card.svelte-1ih9el3.svelte-1ih9el3{height:100%;min-height:100%}',
-  map: `{"version":3,"file":"index.svelte","sources":["index.svelte"],"sourcesContent":["<script context=\\"module\\">\\r\\n  export async function load({ fetch }) {\\r\\n    const res = await fetch(\`/projects.json\`);\\r\\n    const projects = await res.json();\\r\\n    return {\\r\\n      props: { projects },\\r\\n    };\\r\\n  }\\r\\n<\/script>\\r\\n\\r\\n<script>\\r\\n  import Saos from \\"saos/src/Saos.svelte\\";\\r\\n  import technologies from \\"$lib/tech.json\\";\\r\\n  import Modal from \\"$lib/Modal.svelte\\";\\r\\n  import { onMount } from \\"svelte\\";\\r\\n  import Hero from \\"$lib/Hero.svelte\\";\\r\\n  export let projects;\\r\\n\\r\\n  let Carousel;\\r\\n  let carousel; // for calling methods of carousel instance\\r\\n  onMount(async () => {\\r\\n    const module = await import(\\"svelte-carousel\\");\\r\\n    Carousel = module.default;\\r\\n  });\\r\\n\\r\\n  let clickedProject;\\r\\n  let foundProject;\\r\\n  let projectTags;\\r\\n  let isOpen = false;\\r\\n  const close = () => (isOpen = false);\\r\\n  const open = (e) => {\\r\\n    clickedProject = e.target.offsetParent.dataset.id;\\r\\n    getProject(clickedProject);\\r\\n    isOpen = true;\\r\\n  };\\r\\n\\r\\n  const getProject = (clickedProj) => {\\r\\n    const project = projects.find((project) => project.name == clickedProj);\\r\\n    projectTags =\\r\\n      project &&\\r\\n      project.tags\\r\\n        .map((tag) => {\\r\\n          return \`\\r\\n      <span class=\\"tag text-xs uppercase font-semibold mb-1 ml-2 text-blue-500\\">\${tag}</span>\`;\\r\\n        })\\r\\n        .join(\\"\\");\\r\\n    foundProject = project;\\r\\n  };\\r\\n<\/script>\\r\\n\\r\\n<svelte:head>\\r\\n  <title>Dylan Cathelijn - portfolio</title>\\r\\n</svelte:head>\\r\\n\\r\\n<Hero />\\r\\n<div class=\\"container mx-auto\\">\\r\\n  <div class=\\"my-20\\">\\r\\n    <h1 class=\\"text-4xl my-8 font-bold text-white\\">About me</h1>\\r\\n    <Saos\\r\\n      once={true}\\r\\n      animation={\\"fade-in-bottom 1s ease-in-out both\\"}\\r\\n      css_animation={\\"height: 100%\\"}\\r\\n    >\\r\\n      <p\\r\\n        class=\\" text-lg bg-base-200 p-5 rounded-none leading-normal text-white \\"\\r\\n      >\\r\\n        Hi \u{1F44B}, I'm Dylan Cathelijn. I\u2019m a 22 yr old aspiring fullstack web\\r\\n        developer living in Belgium. Since the age of 10 I've been obsessed with\\r\\n        anything relating to computers, and eventually found my passion to be\\r\\n        making websites. I'm currently enrolled at Arteveldehogeschool in the\\r\\n        Programming course where I'm sharpening my skills and learning to work\\r\\n        with modern webtechnologies. I'm fortunate enough to live in an age\\r\\n        where I'm able to find a ton of information online and use that\\r\\n        information to teach myself new things. I'm passionate about learning\\r\\n        new technologies, and I'm always looking for new ways to improve myself.\\r\\n      </p>\\r\\n    </Saos>\\r\\n  </div>\\r\\n\\r\\n  <div class=\\"my-20\\">\\r\\n    <a class=\\"projectLink flex items-center\\" href=\\"/projects\\">\\r\\n      <h1 class=\\"text-4xl my-8 font-bold text-white\\">Projects</h1>\\r\\n      <img class=\\"h-5 mt-3 ml-2\\" src=\\"/icons/link.svg\\" alt=\\"link icon\\" />\\r\\n    </a>\\r\\n    <div class=\\"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch\\">\\r\\n      {#each projects as project}\\r\\n        <Saos\\r\\n          animation={\\"fade-in-bottom 1s ease-in-out both\\"}\\r\\n          css_animation={\\"height: 100%\\"}\\r\\n        >\\r\\n          <button\\r\\n            on:click={open}\\r\\n            data-id={project.name}\\r\\n            class=\\"card text-left bordered bg-base-200 rounded-none text-white shadow-lg\\"\\r\\n          >\\r\\n            <div class=\\"card-body\\" data-id={project.name}>\\r\\n              <div class=\\"flex -mx-1 flex-wrap\\">\\r\\n                {#each project.tags as tag}\\r\\n                  <span\\r\\n                    class=\\"tag text-xs uppercase font-semibold mb-1 px-1 text-blue-500\\"\\r\\n                    >{tag}\\r\\n                  </span>\\r\\n                {/each}\\r\\n              </div>\\r\\n              <h2 class=\\"card-title text-2xl font-bold break-all\\">\\r\\n                {project.title}\\r\\n              </h2>\\r\\n              <p class=\\"text-gray-500\\">{project.excerpt}</p>\\r\\n            </div>\\r\\n          </button>\\r\\n        </Saos>\\r\\n      {/each}\\r\\n    </div>\\r\\n  </div>\\r\\n\\r\\n  <div class=\\"my-20\\">\\r\\n    <h1 class=\\"text-4xl my-8 font-bold text-white\\">\\r\\n      Technologies I &#10084;&#65039;\\r\\n    </h1>\\r\\n    <div class=\\"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch\\">\\r\\n      {#each technologies as tech}\\r\\n        <Saos\\r\\n          animation={\\"fade-in-bottom 1s ease-in-out both\\"}\\r\\n          css_animation={\\"height: 100%\\"}\\r\\n        >\\r\\n          <div\\r\\n            class=\\"card bordered bg-base-200 px-4 flex flex-row justify-between items-center rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105\\"\\r\\n          >\\r\\n            <p class=\\"text-lg font-bold uppercase\\">{tech.name}</p>\\r\\n            <img class=\\"w-10 h-16\\" src={tech.icon} alt=\\"\\" />\\r\\n          </div>\\r\\n        </Saos>\\r\\n      {/each}\\r\\n    </div>\\r\\n  </div>\\r\\n</div>\\r\\n\\r\\n<Modal\\r\\n  {isOpen}\\r\\n  on:close={close}\\r\\n  tags={projectTags}\\r\\n  projectLink={foundProject\\r\\n    ? foundProject.gh_link\\r\\n      ? foundProject.gh_link\\r\\n      : foundProject.link\\r\\n    : null}\\r\\n  header={foundProject && foundProject.title}\\r\\n>\\r\\n  {#if foundProject}\\r\\n    <svelte:component\\r\\n      this={Carousel}\\r\\n      bind:this={carousel}\\r\\n      autoplay\\r\\n      pauseOnFocus\\r\\n      autoplayProgressVisible\\r\\n      arrows={false}\\r\\n    >\\r\\n      {#each foundProject.images as src}\\r\\n        <img {src} class=\\"carouselImg min-w-full\\" alt=\\"nature\\" />\\r\\n      {/each}\\r\\n    </svelte:component>\\r\\n  {/if}\\r\\n</Modal>\\r\\n\\r\\n<style>\\r\\n  .projectLink h1::after {\\r\\n    content: \\"\\";\\r\\n    display: block;\\r\\n    width: 0;\\r\\n    height: 4px;\\r\\n    margin-top: -0.3rem;\\r\\n    background: var(--color-7);\\r\\n    transition: width ease-in-out 0.5s;\\r\\n  }\\r\\n\\r\\n  .projectLink h1:hover::after {\\r\\n    width: 100%;\\r\\n  }\\r\\n\\r\\n  .card {\\r\\n    box-shadow: 0 0 var(--color-4);\\r\\n    transition: 0.5s ease;\\r\\n  }\\r\\n\\r\\n  .card:hover {\\r\\n    box-shadow: -6px 6px var(--color-7);\\r\\n    transform: translate(6px, -6px);\\r\\n  }\\r\\n\\r\\n  /**\\r\\n * ----------------------------------------\\r\\n * animation fade-in-fwd\\r\\n * ----------------------------------------\\r\\n */\\r\\n  @-webkit-keyframes -global-fade-in-fwd {\\r\\n    0% {\\r\\n      transform: translateZ(-80px);\\r\\n      opacity: 0;\\r\\n    }\\r\\n    100% {\\r\\n      transform: translateZ(0);\\r\\n      opacity: 1;\\r\\n    }\\r\\n  }\\r\\n  @keyframes -global-fade-in-fwd {\\r\\n    0% {\\r\\n      transform: translateZ(-80px);\\r\\n      opacity: 0;\\r\\n    }\\r\\n    100% {\\r\\n      transform: translateZ(0);\\r\\n      opacity: 1;\\r\\n    }\\r\\n  }\\r\\n\\r\\n  @-webkit-keyframes -global-fade-in-bottom {\\r\\n    0% {\\r\\n      transform: translateY(50px);\\r\\n      opacity: 0;\\r\\n    }\\r\\n    100% {\\r\\n      transform: translateY(0);\\r\\n      opacity: 1;\\r\\n    }\\r\\n  }\\r\\n  @keyframes -global-fade-in-bottom {\\r\\n    0% {\\r\\n      transform: translateY(50px);\\r\\n      opacity: 0;\\r\\n    }\\r\\n    100% {\\r\\n      transform: translateY(0);\\r\\n      opacity: 1;\\r\\n    }\\r\\n  }\\r\\n\\r\\n  .card {\\r\\n    height: 100%;\\r\\n    min-height: 100%;\\r\\n  }\\r\\n\\r\\n  /* .carouselImg {\\r\\n    min-width: 100% !important;\\r\\n    min-height: 100% !important;\\r\\n  } */</style>\\r\\n"],"names":[],"mappings":"AAqKE,2BAAY,CAAC,iBAAE,OAAO,AAAC,CAAC,AACtB,OAAO,CAAE,EAAE,CACX,OAAO,CAAE,KAAK,CACd,KAAK,CAAE,CAAC,CACR,MAAM,CAAE,GAAG,CACX,UAAU,CAAE,OAAO,CACnB,UAAU,CAAE,IAAI,SAAS,CAAC,CAC1B,UAAU,CAAE,KAAK,CAAC,WAAW,CAAC,IAAI,AACpC,CAAC,AAED,2BAAY,CAAC,iBAAE,MAAM,OAAO,AAAC,CAAC,AAC5B,KAAK,CAAE,IAAI,AACb,CAAC,AAED,KAAK,8BAAC,CAAC,AACL,UAAU,CAAE,CAAC,CAAC,CAAC,CAAC,IAAI,SAAS,CAAC,CAC9B,UAAU,CAAE,IAAI,CAAC,IAAI,AACvB,CAAC,AAED,mCAAK,MAAM,AAAC,CAAC,AACX,UAAU,CAAE,IAAI,CAAC,GAAG,CAAC,IAAI,SAAS,CAAC,CACnC,SAAS,CAAE,UAAU,GAAG,CAAC,CAAC,IAAI,CAAC,AACjC,CAAC,AAOD,mBAAmB,AAAQ,WAAW,AAAC,CAAC,AACtC,EAAE,AAAC,CAAC,AACF,SAAS,CAAE,WAAW,KAAK,CAAC,CAC5B,OAAO,CAAE,CAAC,AACZ,CAAC,AACD,IAAI,AAAC,CAAC,AACJ,SAAS,CAAE,WAAW,CAAC,CAAC,CACxB,OAAO,CAAE,CAAC,AACZ,CAAC,AACH,CAAC,AACD,WAAW,AAAQ,WAAW,AAAC,CAAC,AAC9B,EAAE,AAAC,CAAC,AACF,SAAS,CAAE,WAAW,KAAK,CAAC,CAC5B,OAAO,CAAE,CAAC,AACZ,CAAC,AACD,IAAI,AAAC,CAAC,AACJ,SAAS,CAAE,WAAW,CAAC,CAAC,CACxB,OAAO,CAAE,CAAC,AACZ,CAAC,AACH,CAAC,AAED,mBAAmB,AAAQ,cAAc,AAAC,CAAC,AACzC,EAAE,AAAC,CAAC,AACF,SAAS,CAAE,WAAW,IAAI,CAAC,CAC3B,OAAO,CAAE,CAAC,AACZ,CAAC,AACD,IAAI,AAAC,CAAC,AACJ,SAAS,CAAE,WAAW,CAAC,CAAC,CACxB,OAAO,CAAE,CAAC,AACZ,CAAC,AACH,CAAC,AACD,WAAW,AAAQ,cAAc,AAAC,CAAC,AACjC,EAAE,AAAC,CAAC,AACF,SAAS,CAAE,WAAW,IAAI,CAAC,CAC3B,OAAO,CAAE,CAAC,AACZ,CAAC,AACD,IAAI,AAAC,CAAC,AACJ,SAAS,CAAE,WAAW,CAAC,CAAC,CACxB,OAAO,CAAE,CAAC,AACZ,CAAC,AACH,CAAC,AAED,KAAK,8BAAC,CAAC,AACL,MAAM,CAAE,IAAI,CACZ,UAAU,CAAE,IAAI,AAClB,CAAC"}`
+  map: '{"version":3,"file":"index.svelte","sources":["index.svelte"],"sourcesContent":["<script context=\\"module\\">\\r\\n  export async function load({ fetch }) {\\r\\n    const res = await fetch(`/projects.json`);\\r\\n    const projects = await res.json();\\r\\n    return {\\r\\n      props: { projects },\\r\\n    };\\r\\n  }\\r\\n<\/script>\\r\\n\\r\\n<script>\\r\\n  import Saos from \\"saos/src/Saos.svelte\\";\\r\\n  import Hero from \\"$components/Hero.svelte\\";\\r\\n  import About from \\"$components/About.svelte\\";\\r\\n  import Technologies from \\"$components/Technologies.svelte\\";\\r\\n  export let projects;\\r\\n<\/script>\\r\\n\\r\\n<svelte:head>\\r\\n  <title>Dylan Cathelijn - portfolio</title>\\r\\n</svelte:head>\\r\\n\\r\\n<Hero />\\r\\n<About />\\r\\n\\r\\n<div id=\\"proj\\" class=\\"my-20 container mx-auto\\">\\r\\n  <Saos\\r\\n    animation={\\"fade-in-bottom 1s ease-in-out both\\"}\\r\\n    css_animation={\\"height: 100%\\"}\\r\\n  >\\r\\n    <a class=\\"projectLink flex items-center\\" href=\\"/projects\\">\\r\\n      <h1 class=\\"text-4xl my-8 font-bold text-white\\">Projects</h1>\\r\\n      <img class=\\"h-5 mt-3 ml-2\\" src=\\"/icons/link.svg\\" alt=\\"link icon\\" />\\r\\n    </a>\\r\\n    <div class=\\"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch\\">\\r\\n      {#each projects as project}\\r\\n        <a\\r\\n          href={`/projects/${project.name}`}\\r\\n          data-id={project.name}\\r\\n          class=\\"card text-left bordered bg-base-200 rounded-none text-white shadow-lg\\"\\r\\n        >\\r\\n          <div class=\\"card-body\\" data-id={project.name}>\\r\\n            <div class=\\"flex -mx-1 flex-wrap\\">\\r\\n              {#each project.tags as tag}\\r\\n                <span\\r\\n                  class=\\"tag text-xs uppercase font-semibold mb-1 px-1 text-blue-500\\"\\r\\n                  >{tag}\\r\\n                </span>\\r\\n              {/each}\\r\\n            </div>\\r\\n            <h2 class=\\"card-title text-2xl font-bold break-all\\">\\r\\n              {project.title}\\r\\n            </h2>\\r\\n            <p class=\\"text-gray-500\\">{project.excerpt}</p>\\r\\n          </div>\\r\\n        </a>\\r\\n      {/each}\\r\\n    </div>\\r\\n  </Saos>\\r\\n</div>\\r\\n\\r\\n<Technologies />\\r\\n\\r\\n<!-- <Modal\\r\\n  {isOpen}\\r\\n  on:close={close}\\r\\n  tags={projectTags}\\r\\n  projectLink={foundProject\\r\\n    ? foundProject.gh_link\\r\\n      ? foundProject.gh_link\\r\\n      : foundProject.link\\r\\n    : null}\\r\\n  header={foundProject && foundProject.title}\\r\\n/> -->\\r\\n<style>\\r\\n  .projectLink h1::after {\\r\\n    content: \\"\\";\\r\\n    display: block;\\r\\n    width: 0;\\r\\n    height: 4px;\\r\\n    margin-top: -0.3rem;\\r\\n    background: var(--color-7);\\r\\n    transition: width ease-in-out 0.5s;\\r\\n  }\\r\\n\\r\\n  .projectLink h1:hover::after {\\r\\n    width: 100%;\\r\\n  }\\r\\n\\r\\n  .card {\\r\\n    box-shadow: 0 0 var(--color-4);\\r\\n    transition: 0.5s ease;\\r\\n  }\\r\\n\\r\\n  .card:hover {\\r\\n    box-shadow: -6px 6px var(--color-7);\\r\\n    transform: translate(6px, -6px);\\r\\n  }\\r\\n\\r\\n  /**\\r\\n * ----------------------------------------\\r\\n * animation fade-in-fwd\\r\\n * ----------------------------------------\\r\\n */\\r\\n  @-webkit-keyframes -global-fade-in-fwd {\\r\\n    0% {\\r\\n      transform: translateZ(-80px);\\r\\n      opacity: 0;\\r\\n    }\\r\\n    100% {\\r\\n      transform: translateZ(0);\\r\\n      opacity: 1;\\r\\n    }\\r\\n  }\\r\\n  @keyframes -global-fade-in-fwd {\\r\\n    0% {\\r\\n      transform: translateZ(-80px);\\r\\n      opacity: 0;\\r\\n    }\\r\\n    100% {\\r\\n      transform: translateZ(0);\\r\\n      opacity: 1;\\r\\n    }\\r\\n  }\\r\\n\\r\\n  @-webkit-keyframes -global-fade-in-bottom {\\r\\n    0% {\\r\\n      transform: translateY(50px);\\r\\n      opacity: 0;\\r\\n    }\\r\\n    100% {\\r\\n      transform: translateY(0);\\r\\n      opacity: 1;\\r\\n    }\\r\\n  }\\r\\n  @keyframes -global-fade-in-bottom {\\r\\n    0% {\\r\\n      transform: translateY(50px);\\r\\n      opacity: 0;\\r\\n    }\\r\\n    100% {\\r\\n      transform: translateY(0);\\r\\n      opacity: 1;\\r\\n    }\\r\\n  }\\r\\n\\r\\n  .card {\\r\\n    height: 100%;\\r\\n    min-height: 100%;\\r\\n  }\\r\\n\\r\\n  /* .carouselImg {\\r\\n    min-width: 100% !important;\\r\\n    min-height: 100% !important;\\r\\n  } */</style>\\r\\n"],"names":[],"mappings":"AA2EE,2BAAY,CAAC,iBAAE,OAAO,AAAC,CAAC,AACtB,OAAO,CAAE,EAAE,CACX,OAAO,CAAE,KAAK,CACd,KAAK,CAAE,CAAC,CACR,MAAM,CAAE,GAAG,CACX,UAAU,CAAE,OAAO,CACnB,UAAU,CAAE,IAAI,SAAS,CAAC,CAC1B,UAAU,CAAE,KAAK,CAAC,WAAW,CAAC,IAAI,AACpC,CAAC,AAED,2BAAY,CAAC,iBAAE,MAAM,OAAO,AAAC,CAAC,AAC5B,KAAK,CAAE,IAAI,AACb,CAAC,AAED,KAAK,8BAAC,CAAC,AACL,UAAU,CAAE,CAAC,CAAC,CAAC,CAAC,IAAI,SAAS,CAAC,CAC9B,UAAU,CAAE,IAAI,CAAC,IAAI,AACvB,CAAC,AAED,mCAAK,MAAM,AAAC,CAAC,AACX,UAAU,CAAE,IAAI,CAAC,GAAG,CAAC,IAAI,SAAS,CAAC,CACnC,SAAS,CAAE,UAAU,GAAG,CAAC,CAAC,IAAI,CAAC,AACjC,CAAC,AAOD,mBAAmB,AAAQ,WAAW,AAAC,CAAC,AACtC,EAAE,AAAC,CAAC,AACF,SAAS,CAAE,WAAW,KAAK,CAAC,CAC5B,OAAO,CAAE,CAAC,AACZ,CAAC,AACD,IAAI,AAAC,CAAC,AACJ,SAAS,CAAE,WAAW,CAAC,CAAC,CACxB,OAAO,CAAE,CAAC,AACZ,CAAC,AACH,CAAC,AACD,WAAW,AAAQ,WAAW,AAAC,CAAC,AAC9B,EAAE,AAAC,CAAC,AACF,SAAS,CAAE,WAAW,KAAK,CAAC,CAC5B,OAAO,CAAE,CAAC,AACZ,CAAC,AACD,IAAI,AAAC,CAAC,AACJ,SAAS,CAAE,WAAW,CAAC,CAAC,CACxB,OAAO,CAAE,CAAC,AACZ,CAAC,AACH,CAAC,AAED,mBAAmB,AAAQ,cAAc,AAAC,CAAC,AACzC,EAAE,AAAC,CAAC,AACF,SAAS,CAAE,WAAW,IAAI,CAAC,CAC3B,OAAO,CAAE,CAAC,AACZ,CAAC,AACD,IAAI,AAAC,CAAC,AACJ,SAAS,CAAE,WAAW,CAAC,CAAC,CACxB,OAAO,CAAE,CAAC,AACZ,CAAC,AACH,CAAC,AACD,WAAW,AAAQ,cAAc,AAAC,CAAC,AACjC,EAAE,AAAC,CAAC,AACF,SAAS,CAAE,WAAW,IAAI,CAAC,CAC3B,OAAO,CAAE,CAAC,AACZ,CAAC,AACD,IAAI,AAAC,CAAC,AACJ,SAAS,CAAE,WAAW,CAAC,CAAC,CACxB,OAAO,CAAE,CAAC,AACZ,CAAC,AACH,CAAC,AAED,KAAK,8BAAC,CAAC,AACL,MAAM,CAAE,IAAI,CACZ,UAAU,CAAE,IAAI,AAClB,CAAC"}'
 };
-async function load$1({ fetch: fetch2 }) {
+async function load$2({ fetch: fetch2 }) {
   const res = await fetch2(`/projects.json`);
   const projects2 = await res.json();
   return { props: { projects: projects2 } };
 }
 var Routes = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let { projects: projects2 } = $$props;
-  let foundProject;
-  let projectTags;
-  let isOpen = false;
   if ($$props.projects === void 0 && $$bindings.projects && projects2 !== void 0)
     $$bindings.projects(projects2);
-  $$result.css.add(css);
-  let $$settled;
-  let $$rendered;
-  do {
-    $$settled = true;
-    $$rendered = `${$$result.head += `${$$result.title = `<title>Dylan Cathelijn - portfolio</title>`, ""}`, ""}
+  $$result.css.add(css$2);
+  return `${$$result.head += `${$$result.title = `<title>Dylan Cathelijn - portfolio</title>`, ""}`, ""}
 
 ${validate_component(Hero, "Hero").$$render($$result, {}, {}, {})}
-<div class="${"container mx-auto"}"><div class="${"my-20"}"><h1 class="${"text-4xl my-8 font-bold text-white"}">About me</h1>
-    ${validate_component(Saos, "Saos").$$render($$result, {
-      once: true,
-      animation: "fade-in-bottom 1s ease-in-out both",
-      css_animation: "height: 100%"
-    }, {}, {
-      default: () => `<p class="${"text-lg bg-base-200 p-5 rounded-none leading-normal text-white "}">Hi \u{1F44B}, I&#39;m Dylan Cathelijn. I\u2019m a 22 yr old aspiring fullstack web
-        developer living in Belgium. Since the age of 10 I&#39;ve been obsessed with
-        anything relating to computers, and eventually found my passion to be
-        making websites. I&#39;m currently enrolled at Arteveldehogeschool in the
-        Programming course where I&#39;m sharpening my skills and learning to work
-        with modern webtechnologies. I&#39;m fortunate enough to live in an age
-        where I&#39;m able to find a ton of information online and use that
-        information to teach myself new things. I&#39;m passionate about learning
-        new technologies, and I&#39;m always looking for new ways to improve myself.
-      </p>`
-    })}</div>
+${validate_component(About$1, "About").$$render($$result, {}, {}, {})}
 
-  <div class="${"my-20"}"><a class="${"projectLink flex items-center svelte-1ih9el3"}" href="${"/projects"}"><h1 class="${"text-4xl my-8 font-bold text-white svelte-1ih9el3"}">Projects</h1>
+<div id="${"proj"}" class="${"my-20 container mx-auto"}">${validate_component(Saos, "Saos").$$render($$result, {
+    animation: "fade-in-bottom 1s ease-in-out both",
+    css_animation: "height: 100%"
+  }, {}, {
+    default: () => `<a class="${"projectLink flex items-center svelte-1ih9el3"}" href="${"/projects"}"><h1 class="${"text-4xl my-8 font-bold text-white svelte-1ih9el3"}">Projects</h1>
       <img class="${"h-5 mt-3 ml-2"}" src="${"/icons/link.svg"}" alt="${"link icon"}"></a>
-    <div class="${"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch"}">${each(projects2, (project) => `${validate_component(Saos, "Saos").$$render($$result, {
-      animation: "fade-in-bottom 1s ease-in-out both",
-      css_animation: "height: 100%"
-    }, {}, {
-      default: () => `<button${add_attribute("data-id", project.name, 0)} class="${"card text-left bordered bg-base-200 rounded-none text-white shadow-lg svelte-1ih9el3"}"><div class="${"card-body"}"${add_attribute("data-id", project.name, 0)}><div class="${"flex -mx-1 flex-wrap"}">${each(project.tags, (tag) => `<span class="${"tag text-xs uppercase font-semibold mb-1 px-1 text-blue-500"}">${escape(tag)}
-                  </span>`)}</div>
-              <h2 class="${"card-title text-2xl font-bold break-all"}">${escape(project.title)}</h2>
-              <p class="${"text-gray-500"}">${escape(project.excerpt)}</p>
-            </div></button>
-        `
-    })}`)}</div></div>
+    <div class="${"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch"}">${each(projects2, (project) => `<a${add_attribute("href", `/projects/${project.name}`, 0)}${add_attribute("data-id", project.name, 0)} class="${"card text-left bordered bg-base-200 rounded-none text-white shadow-lg svelte-1ih9el3"}"><div class="${"card-body"}"${add_attribute("data-id", project.name, 0)}><div class="${"flex -mx-1 flex-wrap"}">${each(project.tags, (tag) => `<span class="${"tag text-xs uppercase font-semibold mb-1 px-1 text-blue-500"}">${escape(tag)}
+                </span>`)}</div>
+            <h2 class="${"card-title text-2xl font-bold break-all"}">${escape(project.title)}</h2>
+            <p class="${"text-gray-500"}">${escape(project.excerpt)}</p></div>
+        </a>`)}</div>`
+  })}</div>
 
-  <div class="${"my-20"}"><h1 class="${"text-4xl my-8 font-bold text-white"}">Technologies I \u2764\uFE0F
-    </h1>
-    <div class="${"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch"}">${each(technologies, (tech) => `${validate_component(Saos, "Saos").$$render($$result, {
-      animation: "fade-in-bottom 1s ease-in-out both",
-      css_animation: "height: 100%"
-    }, {}, {
-      default: () => `<div class="${"card bordered bg-base-200 px-4 flex flex-row justify-between items-center rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105 svelte-1ih9el3"}"><p class="${"text-lg font-bold uppercase"}">${escape(tech.name)}</p>
-            <img class="${"w-10 h-16"}"${add_attribute("src", tech.icon, 0)} alt="${""}"></div>
-        `
-    })}`)}</div></div></div>
+${validate_component(Technologies, "Technologies").$$render($$result, {}, {}, {})}
 
-${validate_component(Modal, "Modal").$$render($$result, {
-      isOpen,
-      tags: projectTags,
-      projectLink: null,
-      header: foundProject
-    }, {}, {
-      default: () => `${``}`
-    })}`;
-  } while (!$$settled);
-  return $$rendered;
+`;
 });
 var index = /* @__PURE__ */ Object.freeze({
   __proto__: null,
   [Symbol.toStringTag]: "Module",
   "default": Routes,
+  load: load$2
+});
+var ProjectHero = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let { projectImages } = $$props;
+  let carousel;
+  if ($$props.projectImages === void 0 && $$bindings.projectImages && projectImages !== void 0)
+    $$bindings.projectImages(projectImages);
+  let $$settled;
+  let $$rendered;
+  do {
+    $$settled = true;
+    $$rendered = `<div class="${"container mx-auto my-20"}"><div class="${"my-20"}">${validate_component(missing_component, "svelte:component").$$render($$result, {
+      autoplay: true,
+      pauseOnFocus: true,
+      autoplayProgressVisible: true,
+      arrows: false,
+      this: carousel
+    }, {
+      this: ($$value) => {
+        carousel = $$value;
+        $$settled = false;
+      }
+    }, {
+      default: () => `${each(projectImages, (src2) => `<img${add_attribute("src", src2, 0)} class="${"carouselImg"}" alt="${"nature"}">`)}`
+    })}</div>
+  </div>`;
+  } while (!$$settled);
+  return $$rendered;
+});
+var css$1 = {
+  code: ":root{--color-1:#f72585ff;--color-2:#b5179eff;--color-3:#7209b7ff;--color-4:#560badff;--color-5:#480ca8ff;--color-6:#3a0ca3ff;--color-7:#3f37c9ff;--color-8:#4361eeff;--color-9:#4895efff;--color-10:#4cc9f0ff}.card.svelte-1g2uyo7{box-shadow:0 0 var(--color-4);transition:0.5s ease}.card.svelte-1g2uyo7:hover{box-shadow:-6px 6px var(--color-7);transform:translate(6px, -6px)}",
+  map: '{"version":3,"file":"ProjectTechnologies.svelte","sources":["ProjectTechnologies.svelte"],"sourcesContent":["<script>\\r\\n  import Saos from \\"saos/src/Saos.svelte\\";\\r\\n  import { assets, base } from \\"$app/paths\\";\\r\\n  export let filteredTechnologies;\\r\\n<\/script>\\r\\n\\r\\n<div id=\\"tech\\" class=\\"my-20 container mx-auto\\">\\r\\n  <Saos\\r\\n    animation={\\"fade-in-bottom 1s ease-in-out both\\"}\\r\\n    css_animation={\\"height: 100%\\"}\\r\\n  >\\r\\n    <h1 class=\\"text-4xl my-8 font-bold text-white\\">Used technologies</h1>\\r\\n    <div class=\\"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch\\">\\r\\n      {#each filteredTechnologies as tech}\\r\\n        <div\\r\\n          class=\\"card bordered bg-base-200 px-4 flex flex-row justify-between items-center rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105\\"\\r\\n        >\\r\\n          <p class=\\"text-lg font-bold uppercase\\">{tech.name}</p>\\r\\n          <img class=\\"w-10 h-16\\" src={`/${tech.icon}`} alt={tech.name} />\\r\\n        </div>\\r\\n      {/each}\\r\\n    </div>\\r\\n  </Saos>\\r\\n</div>\\r\\n\\r\\n<style>\\r\\n  :root {\\r\\n    --color-1: #f72585ff;\\r\\n    --color-2: #b5179eff;\\r\\n    --color-3: #7209b7ff;\\r\\n    --color-4: #560badff;\\r\\n    --color-5: #480ca8ff;\\r\\n    --color-6: #3a0ca3ff;\\r\\n    --color-7: #3f37c9ff;\\r\\n    --color-8: #4361eeff;\\r\\n    --color-9: #4895efff;\\r\\n    --color-10: #4cc9f0ff;\\r\\n  }\\r\\n\\r\\n  .card {\\r\\n    box-shadow: 0 0 var(--color-4);\\r\\n    transition: 0.5s ease;\\r\\n  }\\r\\n\\r\\n  .card:hover {\\r\\n    box-shadow: -6px 6px var(--color-7);\\r\\n    transform: translate(6px, -6px);\\r\\n  }</style>\\r\\n"],"names":[],"mappings":"AA0BE,KAAK,AAAC,CAAC,AACL,SAAS,CAAE,SAAS,CACpB,SAAS,CAAE,SAAS,CACpB,SAAS,CAAE,SAAS,CACpB,SAAS,CAAE,SAAS,CACpB,SAAS,CAAE,SAAS,CACpB,SAAS,CAAE,SAAS,CACpB,SAAS,CAAE,SAAS,CACpB,SAAS,CAAE,SAAS,CACpB,SAAS,CAAE,SAAS,CACpB,UAAU,CAAE,SAAS,AACvB,CAAC,AAED,KAAK,eAAC,CAAC,AACL,UAAU,CAAE,CAAC,CAAC,CAAC,CAAC,IAAI,SAAS,CAAC,CAC9B,UAAU,CAAE,IAAI,CAAC,IAAI,AACvB,CAAC,AAED,oBAAK,MAAM,AAAC,CAAC,AACX,UAAU,CAAE,IAAI,CAAC,GAAG,CAAC,IAAI,SAAS,CAAC,CACnC,SAAS,CAAE,UAAU,GAAG,CAAC,CAAC,IAAI,CAAC,AACjC,CAAC"}'
+};
+var ProjectTechnologies = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let { filteredTechnologies } = $$props;
+  if ($$props.filteredTechnologies === void 0 && $$bindings.filteredTechnologies && filteredTechnologies !== void 0)
+    $$bindings.filteredTechnologies(filteredTechnologies);
+  $$result.css.add(css$1);
+  return `<div id="${"tech"}" class="${"my-20 container mx-auto"}">${validate_component(Saos, "Saos").$$render($$result, {
+    animation: "fade-in-bottom 1s ease-in-out both",
+    css_animation: "height: 100%"
+  }, {}, {
+    default: () => `<h1 class="${"text-4xl my-8 font-bold text-white"}">Used technologies</h1>
+    <div class="${"grid grid-cols-1 md:grid-cols-3 gap-7 place-items-stretch"}">${each(filteredTechnologies, (tech) => `<div class="${"card bordered bg-base-200 px-4 flex flex-row justify-between items-center rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105 svelte-1g2uyo7"}"><p class="${"text-lg font-bold uppercase"}">${escape(tech.name)}</p>
+          <img class="${"w-10 h-16"}"${add_attribute("src", `/${tech.icon}`, 0)}${add_attribute("alt", tech.name, 0)}>
+        </div>`)}</div>`
+  })}
+</div>`;
+});
+async function load$1({ page: page2, fetch: fetch2 }) {
+  const res = await fetch2(`/projects.json`);
+  const projects2 = await res.json();
+  return {
+    props: { projectName: page2.params.slug, projects: projects2 }
+  };
+}
+var U5Bslugu5D = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let { projects: projects2 } = $$props;
+  let { projectName } = $$props;
+  let foundProject;
+  let projectImages;
+  let filteredTechnologies;
+  const getProject = (projectName2) => {
+    const project = projects2 && projects2.find((project2) => project2.name == projectName2);
+    foundProject = project;
+    filteredTechnologies = technologies.filter((tag) => {
+      let projectTags = project.tags.map((tag2) => tag2.toLowerCase());
+      return projectTags.includes(tag.name);
+    });
+    projectImages = foundProject && project.images;
+  };
+  projectName && getProject(projectName);
+  if ($$props.projects === void 0 && $$bindings.projects && projects2 !== void 0)
+    $$bindings.projects(projects2);
+  if ($$props.projectName === void 0 && $$bindings.projectName && projectName !== void 0)
+    $$bindings.projectName(projectName);
+  return `${validate_component(ProjectHero, "ProjectHero").$$render($$result, { projectName, projectImages }, {}, {})}
+
+<div class="${"max-w-4xl mx-auto"}"><h1 class="${"text-5xl font-bold text-blue-500 mb-3"}">${escape(foundProject.title)}</h1>
+  ${foundProject.gh_link ? `<a class="${"mt-10 text-white font-bold"}" target="${"_blank"}"${add_attribute("href", foundProject.gh_link, 0)}>View on GitHub</a>` : `<a class="${"mt-10 text-white font-bold"}" target="${"_blank"}"${add_attribute("href", foundProject.link, 0)}>Visit website</a>`}
+  <p class="${"text-white mt-10"}"><!-- HTML_TAG_START -->${foundProject.long_text}<!-- HTML_TAG_END --></p></div>
+
+<div class="${"max-w-4xl mx-auto"}">${validate_component(ProjectTechnologies, "ProjectTechnologies").$$render($$result, { filteredTechnologies }, {}, {})}</div>`;
+});
+var _slug_ = /* @__PURE__ */ Object.freeze({
+  __proto__: null,
+  [Symbol.toStringTag]: "Module",
+  "default": U5Bslugu5D,
   load: load$1
 });
+var css = {
+  code: ".card.svelte-gp0fu6{box-shadow:0 0 #560badff;transition:0.5s ease}.card.svelte-gp0fu6:hover{box-shadow:-6px 6px #3f37c9ff;transform:translate(6px, -6px)}",
+  map: '{"version":3,"file":"projects.svelte","sources":["projects.svelte"],"sourcesContent":["<script context=\\"module\\">\\r\\n  export async function load({ fetch }) {\\r\\n    const res = await fetch(`/projects.json`);\\r\\n    const projects = await res.json();\\r\\n    return {\\r\\n      props: { projects },\\r\\n    };\\r\\n  }\\r\\n<\/script>\\r\\n\\r\\n<script>\\r\\n  import Saos from \\"saos/src/Saos.svelte\\";\\r\\n  export let projects;\\r\\n<\/script>\\r\\n\\r\\n<div class=\\"container mx-auto my-20\\">\\r\\n  <h1 class=\\"text-7xl text-white my-10\\">Projects I\'ve worked on</h1>\\r\\n  <div class=\\"grid grid-cols-1 gap-10 place-items-stretch\\">\\r\\n    {#each projects as project, index}\\r\\n      <Saos animation={\\"fade-in-bottom 1s ease-in-out both\\"}>\\r\\n        <a\\r\\n          href={`/projects/${project.name}`}\\r\\n          data-id={project.name}\\r\\n          class=\\"card w-full lg:card-side text-left bordered bg-base-200 rounded-none text-white shadow-lg\\"\\r\\n        >\\r\\n          <div class=\\"lg:w-2/5 min-h-full\\">\\r\\n            <img src={project.images[0]} alt=\\"\\" />\\r\\n          </div>\\r\\n          <div\\r\\n            class=\\"card-body md:w-1/2 {index % 2\\r\\n              ? \'lg:order-first\'\\r\\n              : \'lg:order-last\'}\\"\\r\\n            data-id={project.name}\\r\\n          >\\r\\n            <div class=\\"flex -mx-1 flex-wrap\\">\\r\\n              {#each project.tags as tag}\\r\\n                <span\\r\\n                  class=\\"tag text-xs uppercase font-semibold mb-1 px-1 text-blue-500\\"\\r\\n                  >{tag}\\r\\n                </span>\\r\\n              {/each}\\r\\n            </div>\\r\\n            <h2 class=\\"card-title text-2xl font-bold break-all\\">\\r\\n              {project.title}\\r\\n            </h2>\\r\\n            <p class=\\"text-gray-500\\">{project.excerpt}</p>\\r\\n          </div>\\r\\n        </a>\\r\\n      </Saos>\\r\\n    {/each}\\r\\n  </div>\\r\\n</div>\\r\\n\\r\\n<style>\\r\\n  .card {\\r\\n    box-shadow: 0 0 #560badff;\\r\\n    transition: 0.5s ease;\\r\\n  }\\r\\n\\r\\n  .card:hover {\\r\\n    box-shadow: -6px 6px #3f37c9ff;\\r\\n    transform: translate(6px, -6px);\\r\\n  }</style>\\r\\n"],"names":[],"mappings":"AAsDE,KAAK,cAAC,CAAC,AACL,UAAU,CAAE,CAAC,CAAC,CAAC,CAAC,SAAS,CACzB,UAAU,CAAE,IAAI,CAAC,IAAI,AACvB,CAAC,AAED,mBAAK,MAAM,AAAC,CAAC,AACX,UAAU,CAAE,IAAI,CAAC,GAAG,CAAC,SAAS,CAC9B,SAAS,CAAE,UAAU,GAAG,CAAC,CAAC,IAAI,CAAC,AACjC,CAAC"}'
+};
 async function load({ fetch: fetch2 }) {
   const res = await fetch2(`/projects.json`);
   const projects2 = await res.json();
   return { props: { projects: projects2 } };
 }
 var Projects = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-  console.log(import_ts_results.Ok);
   let { projects: projects2 } = $$props;
   if ($$props.projects === void 0 && $$bindings.projects && projects2 !== void 0)
     $$bindings.projects(projects2);
+  $$result.css.add(css);
   return `<div class="${"container mx-auto my-20"}"><h1 class="${"text-7xl text-white my-10"}">Projects I&#39;ve worked on</h1>
   <div class="${"grid grid-cols-1 gap-10 place-items-stretch"}">${each(projects2, (project, index2) => `${validate_component(Saos, "Saos").$$render($$result, {
     animation: "fade-in-bottom 1s ease-in-out both"
   }, {}, {
-    default: () => `<button${add_attribute("data-id", project.name, 0)} class="${"card w-full card-side text-left bordered bg-base-200 rounded-none text-white shadow-lg"}"><div class="${"w-2/5"}"><img${add_attribute("src", project.images[0], 0)} alt="${""}"></div>
-          <div class="${"card-body w-1/2 " + escape(index2 % 2 ? "order-first" : "order-last")}"${add_attribute("data-id", project.name, 0)}><div class="${"flex -mx-1 flex-wrap"}">${each(project.tags, (tag) => `<span class="${"tag text-xs uppercase font-semibold mb-1 px-1 text-blue-500"}">${escape(tag)}
+    default: () => `<a${add_attribute("href", `/projects/${project.name}`, 0)}${add_attribute("data-id", project.name, 0)} class="${"card w-full lg:card-side text-left bordered bg-base-200 rounded-none text-white shadow-lg svelte-gp0fu6"}"><div class="${"lg:w-2/5 min-h-full"}"><img${add_attribute("src", project.images[0], 0)} alt="${""}"></div>
+          <div class="${"card-body md:w-1/2 " + escape(index2 % 2 ? "lg:order-first" : "lg:order-last")}"${add_attribute("data-id", project.name, 0)}><div class="${"flex -mx-1 flex-wrap"}">${each(project.tags, (tag) => `<span class="${"tag text-xs uppercase font-semibold mb-1 px-1 text-blue-500"}">${escape(tag)}
                 </span>`)}</div>
             <h2 class="${"card-title text-2xl font-bold break-all"}">${escape(project.title)}</h2>
             <p class="${"text-gray-500"}">${escape(project.excerpt)}</p>
-          </div></button>
+          </div></a>
       `
-  })}`)}</div></div>`;
+  })}`)}</div>
+</div>`;
 });
 var projects = /* @__PURE__ */ Object.freeze({
   __proto__: null,

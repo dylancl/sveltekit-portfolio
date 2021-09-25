@@ -12,9 +12,9 @@
         "build": "npm run tailwind:build && npm run build:only"
     },
     "devDependencies": {
-        "@sveltejs/adapter-netlify": "^1.0.0-next.31",
         "@sveltejs/adapter-node": "next",
         "@sveltejs/adapter-static": "^1.0.0-next.18",
+        "@sveltejs/adapter-vercel": "next",
         "@sveltejs/kit": "next",
         "autoprefixer": "^10.3.4",
         "concurrently": "^6.2.1",
@@ -29,7 +29,7 @@
         "remark-parse": "^9.0.0",
         "remark-rehype": "^8.0.0",
         "sass": "^1.0.0",
-        "svelte": "^3.29.0",
+        "svelte": "^3.43.0",
         "svelte-preprocess": "^4.0.0",
         "tailwindcss": "^2.2.9",
         "to-vfile": "^6.1.0",
@@ -42,7 +42,6 @@
         "daisyui": "^1.14.0",
         "saos": "^1.2.0",
         "svelte-carousel": "^1.0.15-rc1",
-        "sveltejs": "file:adapter/netlify@next",
         "vanta": "^0.5.21"
     }
 }
