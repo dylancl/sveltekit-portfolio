@@ -10,9 +10,9 @@
 
 <script>
   import Saos from "saos/src/Saos.svelte";
-  import Hero from "$components/Hero.svelte";
-  import About from "$components/About.svelte";
-  import Technologies from "$components/Technologies.svelte";
+  import Hero from "$lib/components/Hero.svelte";
+  import About from "$lib/components/About.svelte";
+  import Technologies from "$lib/components/Technologies.svelte";
   export let projects;
 </script>
 
