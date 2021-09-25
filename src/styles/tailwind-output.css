@@ -1928,6 +1928,9 @@ html {
 .mt-10 {
 	margin-top: 2.5rem;
 }
+.ml-4 {
+	margin-left: 1rem;
+}
 .flex {
 	display: flex;
 }
@@ -1948,6 +1951,18 @@ html {
 }
 .h-16 {
 	height: 4rem;
+}
+.h-20 {
+	height: 5rem;
+}
+.max-h-20 {
+	max-height: 5rem;
+}
+.max-h-14 {
+	max-height: 3.5rem;
+}
+.max-h-12 {
+	max-height: 3rem;
 }
 .min-h-full {
 	min-height: 100%;
@@ -2083,6 +2098,10 @@ html {
 .text-5xl {
 	font-size: 3rem;
 	line-height: 1;
+}
+.text-xl {
+	font-size: 1.25rem;
+	line-height: 1.75rem;
 }
 .font-bold {
 	font-weight: 700;
