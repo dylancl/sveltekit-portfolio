@@ -1,5 +1,6 @@
 <script>
   import { page } from "$app/stores";
+  console.log($page.path);
 </script>
 
 <div>

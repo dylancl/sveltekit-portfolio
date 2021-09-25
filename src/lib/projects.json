@@ -7,11 +7,12 @@
         "link": "https://shibe.host",
         "tags": [
             "NodeJS",
-            "Express",
+            "ExpressJS",
             "SvelteKit",
-            "Mongoose",
+            "MongoDB",
             "Tailwind"
-        ]
+        ],
+        "long_text": "shibe.host is a file uploading service I made using a highly customized version of <a href='https://github.com/tycrek/ass'>ASS (A Selfhosted ShareX Server) to handle file uploads, and a frontend written with SvelteKit. The site is private by design, with an invite key system that people can use to invite their friends. I learned a lot about properly handing REST routes as well as learning how to work with SvelteKit to create a SSR app.</a>"
     },
     {
         "name": "arlan",
@@ -22,12 +23,13 @@
         "gh_link": "https://github.com/pgmgent-pgm-4/webshop-arlan",
         "tags": [
             "NodeJS",
-            "Express",
-            "Passport",
+            "ExpressJS",
+            "PassportJS",
             "Sequelize",
             "Jest"
         ],
-        "finished": true
+        "finished": true,
+        "long_text": "Arlan is a cryptocurrency webshop I made for Arteveldehogeschool in collaberation with Arthur Temmerman. The goal of the site was to rethink how webshops are made, specifically in this case cryptocurrency platforms. We wanted to design a system that made it easier for new people to invest, or buy cryptocurrency by not working like a crypto exchange, but rather a crypto webshop. This is accomplished by only allowing the user to buy with set amounts of their currency in exchange for the set amount of crypto."
     },
     {
         "name": "movc",
@@ -37,12 +39,13 @@
         "gh_link": "https://github.com/pgmgent-pgm-4/movie-application-dylancl",
         "images": ["/images/moviecollection.png", "/images/moviecollection1.png", "/images/moviecollection2.png"],
         "tags": [
-            "React",
-            "Firebase",
+            "ReactJS",
+            "firebase",
             "Jest",
             "Storybook",
             "Sass"
         ],
-        "finished": true
+        "finished": true,
+        "long_text": "{MovC} (read: MovieCollection) is a project for Arteveldehogeschool where the task was to create a visually appealing movie database, along the likes of IMDB and Rotten Tomatoes. I decided to go for a dashboard-like appearance emulating a site like Netflix allowing for an easy & intiutive way of browsing the database. The site was deployed to Firebase using GitHub actions, and uses Firestore for user authentication."
     }
 ]

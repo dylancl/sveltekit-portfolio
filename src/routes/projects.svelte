@@ -10,40 +10,7 @@
 
 <script>
   import Saos from "saos/src/Saos.svelte";
-  import Modal from "$lib/Modal.svelte";
-  import { onMount } from "svelte";
   export let projects;
-
-  let Carousel;
-  let carousel; // for calling methods of carousel instance
-  onMount(async () => {
-    const module = await import("svelte-carousel");
-    Carousel = module.default;
-  });
-
-  let clickedProject;
-  let foundProject;
-  let projectTags;
-  let isOpen = false;
-  const close = () => (isOpen = false);
-  const open = (e) => {
-    clickedProject = e.target.offsetParent.dataset.id;
-    getProject(clickedProject);
-    isOpen = true;
-  };
-
-  const getProject = (clickedProj) => {
-    const project = projects.find((project) => project.name == clickedProj);
-    projectTags =
-      project &&
-      project.tags
-        .map((tag) => {
-          return `
-      <span class="tag text-xs uppercase font-semibold mb-1 ml-2 text-blue-500">${tag}</span>`;
-        })
-        .join("");
-    foundProject = project;
-  };
 </script>
 
 <div class="container mx-auto my-20">
@@ -51,8 +18,8 @@
   <div class="grid grid-cols-1 gap-10 place-items-stretch">
     {#each projects as project, index}
       <Saos animation={"fade-in-bottom 1s ease-in-out both"}>
-        <button
-          on:click={open}
+        <a
+          href={`/projects/${project.name}`}
           data-id={project.name}
           class="card w-full lg:card-side text-left bordered bg-base-200 rounded-none text-white shadow-lg"
         >
@@ -78,38 +45,11 @@
             </h2>
             <p class="text-gray-500">{project.excerpt}</p>
           </div>
-        </button>
+        </a>
       </Saos>
     {/each}
   </div>
 </div>
-
-<Modal
-  {isOpen}
-  on:close={close}
-  tags={projectTags}
-  projectLink={foundProject
-    ? foundProject.gh_link
-      ? foundProject.gh_link
-      : foundProject.link
-    : null}
-  header={foundProject && foundProject.title}
->
-  {#if foundProject}
-    <svelte:component
-      this={Carousel}
-      bind:this={carousel}
-      autoplay
-      pauseOnFocus
-      autoplayProgressVisible
-      arrows={false}
-    >
-      {#each foundProject.images as src}
-        <img {src} class="carouselImg min-w-full" alt="nature" />
-      {/each}
-    </svelte:component>
-  {/if}
-</Modal>
 
 <style>
   .card {
