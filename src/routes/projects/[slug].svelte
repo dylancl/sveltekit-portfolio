@@ -26,7 +26,7 @@
       projects && projects.find((project) => project.name == projectName);
     foundProject = project;
 
-    filteredTechnologies = technologies.filter((tag) => {
+    filteredTechnologies = technologies.items.filter((tag) => {
       let projectTags = project.tags.map((tag) => tag.toLowerCase());
       return projectTags.includes(tag.name);
     });

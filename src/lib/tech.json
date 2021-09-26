@@ -1,73 +1,117 @@
-[{
-        "name": "nodejs",
-        "icon": "icons/nodejs.svg"
+{
+  "categories": [
+    "frontend frameworks",
+    "backend frameworks",
+    "libraries",
+    "hosting",
+    "database",
+    "tools"
+  ],
+  "items": [
+    {
+      "name": "nodejs",
+      "icon": "icons/nodejs.svg",
+      "category": "backend frameworks"
     },
     {
-        "name": "expressjs",
-        "icon": "icons/express.svg"
+      "name": "vuejs",
+      "icon": "icons/vue.svg",
+      "category": "frontend frameworks"
     },
     {
-        "name": "mongodb",
-        "icon": "icons/mongodb.svg"
+      "name": "python",
+      "icon": "icons/python.svg",
+      "category": "backend frameworks"
     },
     {
-        "name": "sequelize",
-        "icon": "icons/sequelize-icon.svg"
+      "name": "expressjs",
+      "icon": "icons/express.svg",
+      "category": "backend frameworks"
     },
     {
-        "name": "sveltekit",
-        "icon": "icons/svelte-icon.svg"
+      "name": "mongodb",
+      "icon": "icons/mongodb.svg",
+      "category": "database"
     },
     {
-        "name": "reactjs",
-        "icon": "icons/react-icon.svg"
+      "name": "sequelize",
+      "icon": "icons/sequelize-icon.svg",
+      "category": "database"
     },
     {
-        "name": "tailwind",
-        "icon": "icons/tailwind-css-icon.svg"
+      "name": "sveltekit",
+      "icon": "icons/svelte-icon.svg",
+      "category": "frontend frameworks"
     },
     {
-        "name": "webpack",
-        "icon": "icons/webpack.svg"
+      "name": "reactjs",
+      "icon": "icons/react-icon.svg",
+      "category": "frontend frameworks"
     },
     {
-        "name": "jest",
-        "icon": "icons/jest.svg"
+      "name": "tailwind",
+      "icon": "icons/tailwind-css-icon.svg",
+      "category": "libraries"
     },
     {
-        "name": "laravel",
-        "icon": "icons/laravel-icon.svg"
+      "name": "webpack",
+      "icon": "icons/webpack.svg",
+      "category": "tools"
     },
     {
-        "name": "symfony",
-        "icon": "icons/symfony-icon.svg"
+      "name": "jest",
+      "icon": "icons/jest.svg",
+      "category": "libraries"
     },
     {
-        "name": "github",
-        "icon": "icons/github.svg"
+      "name": "laravel",
+      "icon": "icons/laravel-icon.svg",
+      "category": "backend frameworks"
     },
     {
-        "name": "npm",
-        "icon": "icons/npm.svg"
+      "name": "symfony",
+      "icon": "icons/symfony-icon.svg",
+      "category": "backend frameworks"
     },
     {
-        "name": "netlify",
-        "icon": "icons/netlify.svg"
+      "name": "github",
+      "icon": "icons/github.svg",
+      "category": "hosting"
     },
     {
-        "name": "firebase",
-        "icon": "icons/firebase.svg"
+      "name": "npm",
+      "icon": "icons/npm.svg",
+      "category": "tools"
     },
     {
-        "name": "socket.io",
-        "icon": "icons/socketdotio.svg"
+      "name": "netlify",
+      "icon": "icons/netlify.svg",
+      "category": "hosting"
     },
     {
-        "name": "sass",
-        "icon": "icons/sass.svg"
+      "name": "vercel",
+      "icon": "icons/vercel.svg",
+      "category": "hosting"
     },
     {
-        "name": "passportjs",
-        "icon": "icons/passport.svg"
+      "name": "firebase",
+      "icon": "icons/firebase.svg",
+      "category": "hosting"
+    },
+    {
+      "name": "socket.io",
+      "icon": "icons/socketdotio.svg",
+      "category": "libraries"
+    },
+    {
+      "name": "sass",
+      "icon": "icons/sass.svg",
+      "category": "libraries"
+    },
+    {
+      "name": "passportjs",
+      "icon": "icons/passport.svg",
+      "category": "libraries"
     }
-]
+  ]
+}

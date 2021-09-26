@@ -13,7 +13,7 @@
       <p
         class=" text-lg bg-base-200 p-5 rounded-none leading-normal text-white "
       >
-        Hi 👋, I'm Dylan Cathelijn. I’m a 22 yr old aspiring fullstack web
+        Hi 👋, I'm Dylan Cathelijn. I’m a 22 year old aspiring fullstack web
         developer living in Belgium. Since the age of 10 I've been obsessed with
         anything relating to computers, and eventually found my passion to be
         making websites. I'm currently enrolled at Arteveldehogeschool in the
