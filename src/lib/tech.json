@@ -1,117 +1,138 @@
 {
   "categories": [
-    "frontend frameworks",
-    "backend frameworks",
-    "libraries",
-    "hosting",
-    "database",
-    "tools"
+    "Languages",
+    "Frontend frameworks",
+    "Backend frameworks",
+    "Libraries",
+    "Hosting",
+    "Databases",
+    "Tools"
   ],
   "items": [
     {
+      "name": "php",
+      "icon": "icons/php.svg",
+      "category": "Languages"
+    },
+    {
+      "name": "javascript",
+      "icon": "icons/javascript.svg",
+      "category": "Languages"
+    },
+    {
       "name": "nodejs",
       "icon": "icons/nodejs.svg",
-      "category": "backend frameworks"
+      "category": "Backend frameworks"
+    },
+    {
+      "name": "flutter",
+      "icon": "icons/flutter.svg",
+      "category": "Tools"
     },
     {
       "name": "vuejs",
       "icon": "icons/vue.svg",
-      "category": "frontend frameworks"
+      "category": "Frontend frameworks"
     },
     {
       "name": "python",
       "icon": "icons/python.svg",
-      "category": "backend frameworks"
+      "category": "Languages"
+    },
+    {
+      "name": "postgresql",
+      "icon": "icons/postgresql.svg",
+      "category": "Databases"
     },
     {
       "name": "expressjs",
       "icon": "icons/express.svg",
-      "category": "backend frameworks"
+      "category": "Backend frameworks"
     },
     {
       "name": "mongodb",
       "icon": "icons/mongodb.svg",
-      "category": "database"
+      "category": "Databases"
     },
     {
       "name": "sequelize",
       "icon": "icons/sequelize-icon.svg",
-      "category": "database"
+      "category": "Databases"
     },
     {
       "name": "sveltekit",
       "icon": "icons/svelte-icon.svg",
-      "category": "frontend frameworks"
+      "category": "Frontend frameworks"
     },
     {
       "name": "reactjs",
       "icon": "icons/react-icon.svg",
-      "category": "frontend frameworks"
+      "category": "Frontend frameworks"
     },
     {
       "name": "tailwind",
       "icon": "icons/tailwind-css-icon.svg",
-      "category": "libraries"
+      "category": "Libraries"
     },
     {
       "name": "webpack",
       "icon": "icons/webpack.svg",
-      "category": "tools"
+      "category": "Tools"
     },
     {
       "name": "jest",
       "icon": "icons/jest.svg",
-      "category": "libraries"
+      "category": "Libraries"
     },
     {
       "name": "laravel",
       "icon": "icons/laravel-icon.svg",
-      "category": "backend frameworks"
+      "category": "Backend frameworks"
     },
     {
       "name": "symfony",
       "icon": "icons/symfony-icon.svg",
-      "category": "backend frameworks"
+      "category": "Backend frameworks"
     },
     {
       "name": "github",
       "icon": "icons/github.svg",
-      "category": "hosting"
+      "category": "Hosting"
     },
     {
       "name": "npm",
       "icon": "icons/npm.svg",
-      "category": "tools"
+      "category": "Tools"
     },
     {
       "name": "netlify",
       "icon": "icons/netlify.svg",
-      "category": "hosting"
+      "category": "Hosting"
     },
     {
       "name": "vercel",
       "icon": "icons/vercel.svg",
-      "category": "hosting"
+      "category": "Hosting"
     },
     {
       "name": "firebase",
       "icon": "icons/firebase.svg",
-      "category": "hosting"
+      "category": "Hosting"
     },
     {
       "name": "socket.io",
       "icon": "icons/socketdotio.svg",
-      "category": "libraries"
+      "category": "Libraries"
     },
     {
       "name": "sass",
       "icon": "icons/sass.svg",
-      "category": "libraries"
+      "category": "Libraries"
     },
     {
       "name": "passportjs",
       "icon": "icons/passport.svg",
-      "category": "libraries"
+      "category": "Libraries"
     }
   ]
 }

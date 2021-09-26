@@ -22,7 +22,7 @@
   </Saos>
 </div> -->
 
-<div class="container mx-auto my-20">
+<div id="tech" class="container mx-auto my-20">
   <h1 class="text-4xl my-8 font-bold text-white">Technologies I've used</h1>
   {#each tech.categories as category}
     <h1 class="text-2xl text-white capitalize mt-10 mb-5 font-bold">
@@ -34,6 +34,7 @@
           <Saos
             animation={"fade-in-bottom 1s ease-in-out both"}
             css_animation={"height: 100%"}
+            once={true}
           >
             <div
               class="card bordered bg-base-200 px-4 flex flex-row justify-between items-center rounded-none text-white shadow-lg transform transition duration-500 hover:scale-105"

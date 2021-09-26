@@ -11,26 +11,26 @@
       <div class="px-2 mx-2 navbar-center lg:flex">
         <div class="flex items-stretch">
           <a
-            class="btn btn-ghost btn-sm rounded-none hover:bg-base-200"
+            class="btn btn-ghost btn-sm rounded-none hover:bg-base-200 font-extrabold"
             href={$page.path === "/projects" ? "/" : "#hero"}
           >
             Home
           </a>
           <a
-            class="btn btn-ghost btn-sm rounded-none hover:bg-base-200"
+            class="btn btn-ghost btn-sm rounded-none hover:bg-base-200 font-extrabold"
             class:text-blue-400={$page.path === "/projects"}
             href={$page.path === "/projects" ? "#" : "#proj"}
           >
             Projects
           </a>
           <a
-            class="btn btn-ghost btn-sm rounded-none hover:bg-base-200"
+            class="btn btn-ghost btn-sm rounded-none hover:bg-base-200 font-extrabold"
             href="/#about"
           >
             About
           </a>
           <a
-            class="btn btn-ghost btn-sm rounded-none hover:bg-base-200"
+            class="btn btn-ghost btn-sm rounded-none hover:bg-base-200 font-extrabold"
             href="/#tech"
           >
             Tech
@@ -41,7 +41,7 @@
     {:else}
       <a href="/projects" class="navbar-start backarrow ml-4">
         <img src="/icons/leftarrow.svg" class="max-h-12" alt="Return" />
-        <p class="font-bold uppercase text-xl">Back</p>
+        <p class="font-extrabold uppercase text-xl">Back</p>
       </a>
     {/if}
   </nav>

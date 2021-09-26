@@ -27,6 +27,7 @@
   <Saos
     animation={"fade-in-bottom 1s ease-in-out both"}
     css_animation={"height: 100%"}
+    once={true}
   >
     <a class="projectLink flex items-center" href="/projects">
       <h1 class="text-4xl my-8 font-bold text-white">Projects</h1>
