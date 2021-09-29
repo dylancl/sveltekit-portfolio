@@ -1970,11 +1970,6 @@ html {
 .w-10 {
 	width: 2.5rem;
 }
-.min-w-min {
-	min-width: -webkit-min-content;
-	min-width: -moz-min-content;
-	min-width: min-content;
-}
 .max-w-screen-xl {
 	max-width: 1280px;
 }
@@ -2235,10 +2230,6 @@ html {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 
-	.md\:grid-cols-4 {
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-	}
-
 	.md\:grid-cols-5 {
 		grid-template-columns: repeat(5, minmax(0, 1fr));
 	}
@@ -2289,14 +2280,6 @@ html {
 
 	.lg\:w-2\/5 {
 		width: 40%;
-	}
-
-	.lg\:w-1\/2 {
-		width: 50%;
-	}
-
-	.lg\:w-10\/12 {
-		width: 83.333333%;
 	}
 
 	.lg\:w-7\/12 {
