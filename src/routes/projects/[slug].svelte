@@ -42,17 +42,28 @@
   <h1 class="text-5xl font-bold text-blue-500 mb-3">
     {foundProject.title}
   </h1>
-  {#if foundProject.gh_link}
+  {#if foundProject.gh_link && foundProject.link}
     <a
       class="mt-10 text-white font-bold"
       target="_blank"
       href={foundProject.gh_link}>View on GitHub</a
     >
-  {:else}
+    <a
+      class="mt-10 ml-4 text-white font-bold"
+      target="_blank"
+      href={foundProject.link}>Visit website</a
+    >
+  {:else if foundProject.link}
     <a
       class="mt-10 text-white font-bold"
       target="_blank"
       href={foundProject.link}>Visit website</a
+    >
+  {:else}
+    <a
+      class="mt-10 text-white font-bold"
+      target="_blank"
+      href={foundProject.gh_link}>View on GitHub</a
     >
   {/if}
   <p class="text-white mt-10">{@html foundProject.long_text}</p>

@@ -14,8 +14,12 @@
       name: "Email",
     },
     {
-      link: "+32470053869",
+      link: "tel:+32470053869",
       name: "Phone",
+    },
+    {
+      link: "/resume.pdf",
+      name: "Resume",
     },
   ];
 
@@ -78,11 +82,11 @@
           full-stack developer based in Belgium
         </p>
         <div
-          class="grid grid-cols-1 md:grid-cols-4 md:ml-4 mt-4 w-full md:w-1/2 lg:w-1/2 gap-7"
+          class="grid grid-cols-1 md:grid-cols-5 md:ml-4 mt-4 w-full md:w-1/2 lg:w-7/12 gap-7"
         >
           {#each contactInformation as contactInfo}
             <div>
-              <a href={contactInfo.link}>
+              <a target="_blank" href={contactInfo.link}>
                 <div
                   class="card bg-base-200 p-0 rounded-none text-white shadow-2xl"
                 >
